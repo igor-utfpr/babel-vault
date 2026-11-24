@@ -3,7 +3,7 @@
 Escape room educacional de **Matemática Discreta / Análise Combinatória** desenvolvido em HTML, CSS e JavaScript, com 5 fases progressivas, meta de 12 acertos, cronômetro de 15 minutos, 3 Cristais de Contenção e banco de 50 questões comentadas.
 
 ## Jogar online
-Acesse: `https://SEU-USUARIO.github.io/cofre-de-babel/`
+Acesse: https://igor-utfpr.github.io/babel-vault/
 
 ## Estrutura das fases
 - **Fase 1 (Fácil — PFC):** 1 acerto
