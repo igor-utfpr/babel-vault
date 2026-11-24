@@ -1,0 +1,3872 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>O Cofre de Babel — A Relojoaria das Possibilidades</title>
+
+  <!-- Fontes Tipográficas: Cinzel (Títulos e Câmaras), Inter (Enunciados/UI) e JetBrains Mono (Cronômetro/Fórmulas/Resoluções) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS & Three.js r128 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0b0e14',
+            deepblue: '#121826',
+            brass: '#d4af37',
+            brasslight: '#f3d27a',
+            parchment: '#f5efe6',
+            cyanbio: '#38bdf8',
+            crimsonalert: '#ef4444',
+            emeraldseal: '#10b981'
+          },
+          fontFamily: {
+            display: ['Cinzel', 'serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* ==========================================================================
+       1. VARIÁVEIS E BASE VISUAL — O COFRE DE BABEL
+       ========================================================================== */
+    :root {
+      --bg-obsidian: #0b0e14;
+      --bg-deepblue: #121826;
+      --gold-primary: #d4af37;
+      --gold-highlight: #f3d27a;
+      --parchment-cream: #f5efe6;
+      --cyan-energy: #38bdf8;
+      --emerald-seal: #10b981;
+      --crimson-alert: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-color: var(--bg-obsidian);
+      color: var(--parchment-cream);
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-image:
+        radial-gradient(circle at 50% 15%, rgba(212, 175, 55, 0.11) 0%, transparent 52%),
+        radial-gradient(circle at 14% 84%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 86% 78%, rgba(212, 175, 55, 0.07) 0%, transparent 45%);
+    }
+
+    /* Canvas 2D de fundo com poeira estelar */
+    #cosmic-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Painéis de Obsidiana e Azul Profundo com borda de latão escovado */
+    .vault-panel {
+      background: linear-gradient(160deg, rgba(18, 24, 38, 0.94) 0%, rgba(11, 14, 20, 0.97) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.32);
+      box-shadow:
+        0 18px 46px rgba(0, 0, 0, 0.68),
+        inset 0 1px 0 rgba(243, 210, 122, 0.16);
+    }
+
+    .vault-panel-inner {
+      background: rgba(9, 12, 18, 0.72);
+      border: 1px solid rgba(212, 175, 55, 0.20);
+    }
+
+    /* Texto dourado metálico */
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #f3d27a 0%, #d4af37 52%, #b5891b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Botão principal em latão dourado */
+    .btn-brass {
+      background: linear-gradient(135deg, #f3d27a 0%, #d4af37 55%, #a47e1b 100%);
+      color: #0b0e14;
+      font-weight: 700;
+      border: 1px solid #f3d27a;
+      box-shadow: 0 6px 22px rgba(212, 175, 55, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-brass:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(243, 210, 122, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+      filter: brightness(1.06);
+    }
+
+    .btn-brass:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    /* Botão secundário em azul profundo e latão */
+    .btn-obsidian {
+      background: rgba(18, 24, 38, 0.94);
+      color: #f5efe6;
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-obsidian:hover:not(:disabled) {
+      border-color: #f3d27a;
+      background: rgba(28, 36, 54, 0.98);
+      box-shadow: 0 0 16px rgba(212, 175, 55, 0.22);
+    }
+
+    /* Botão de confirmação em carmesim */
+    .btn-crimson-confirm {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.28) 0%, rgba(127, 29, 29, 0.72) 100%);
+      color: #fecaca;
+      border: 1px solid #ef4444;
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.34);
+      transition: background 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .btn-crimson-confirm:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.42) 0%, rgba(153, 27, 27, 0.85) 100%);
+    }
+
+    /* Opções de múltipla escolha */
+    .option-card {
+      background: linear-gradient(90deg, rgba(18, 24, 38, 0.90) 0%, rgba(13, 18, 29, 0.96) 100%);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      min-height: 50px;
+      transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+      touch-action: manipulation;
+    }
+
+    .option-card:hover:not(:disabled) {
+      border-color: #f3d27a;
+      background: linear-gradient(90deg, rgba(32, 41, 61, 0.96) 0%, rgba(19, 26, 40, 0.99) 100%);
+      transform: translateX(3px);
+    }
+
+    .option-card.option-correct {
+      border-color: #10b981 !important;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.24) 0%, rgba(12, 29, 25, 0.96) 100%) !important;
+      box-shadow: 0 0 22px rgba(16, 185, 129, 0.30) !important;
+    }
+
+    .option-card.option-wrong {
+      border-color: #ef4444 !important;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.24) 0%, rgba(34, 14, 20, 0.96) 100%) !important;
+      box-shadow: 0 0 22px rgba(239, 68, 68, 0.30) !important;
+    }
+
+    .option-card.option-dimmed {
+      opacity: 0.52;
+    }
+
+    /* ==========================================================================
+       2. ABERTURA CINEMATOGRÁFICA 3D WEBGL ("O DESPERTAR DO COFRE DE BABEL")
+       ========================================================================== */
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      min-height: 100vh;
+      z-index: 10000;
+      background-color: #07090e;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      user-select: none;
+    }
+
+    /* Canvas 3D Three.js ocupando 100% da viewport */
+    #intro-3d-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 1;
+      touch-action: pan-y;
+    }
+
+    /* Fallback 2D caso WebGL esteja desabilitado no dispositivo */
+    #intro-webgl-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 42%, #151e32 0%, #07090e 74%);
+      pointer-events: none;
+    }
+
+    /* Vinheta atmosférica sutil ao redor da cena 3D */
+    .intro-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 42%, transparent 38%, rgba(7, 9, 14, 0.72) 100%),
+        linear-gradient(180deg, rgba(7, 9, 14, 0.35) 0%, transparent 25%, transparent 55%, rgba(7, 9, 14, 0.88) 100%);
+    }
+
+    /* Véu de Clarão Dourado durante o Dolly-Zoom Plunge (Ato III) */
+    #intro-flash-veil {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 46%, #ffffff 0%, #f3d27a 42%, rgba(212, 175, 55, 0.15) 85%, transparent 100%);
+      transition: opacity 0.55s ease-in;
+    }
+
+    #intro-overlay.plunge-flash #intro-flash-veil {
+      opacity: 1;
+    }
+
+    /* Botão Pular Prólogo fixo no topo direito (z-index: 10005, touch-action: manipulation) */
+    #btn-skip-intro {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 10005;
+      touch-action: manipulation;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(11, 14, 20, 0.84);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(243, 210, 122, 0.45);
+      color: #f3d27a;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.15s ease, background 0.2s ease;
+    }
+
+    #btn-skip-intro:hover {
+      border-color: #f3d27a;
+      background: rgba(24, 32, 48, 0.95);
+    }
+
+    #btn-skip-intro:active {
+      transform: scale(0.97);
+    }
+
+    /* Indicador discreto de interação 3D no topo esquerdo */
+    #intro-orbit-hint {
+      position: fixed;
+      top: 18px;
+      left: 16px;
+      z-index: 10004;
+      pointer-events: none;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(11, 14, 20, 0.72);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      color: rgba(245, 239, 230, 0.72);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    #intro-overlay.act-2 #intro-orbit-hint {
+      opacity: 1;
+    }
+
+    /* Card de Vidro Obsidiana Escuro do Ato II (posicionado na metade inferior para manter o Astrolábio 3D visível) */
+    #intro-stage-container {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      max-width: 720px;
+      padding: 0 16px max(22px, env(safe-area-inset-bottom, 22px));
+      pointer-events: none;
+    }
+
+    #intro-epigraph-card {
+      width: 100%;
+      background: linear-gradient(165deg, rgba(11, 14, 20, 0.86) 0%, rgba(18, 24, 38, 0.92) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(243, 210, 122, 0.48);
+      border-radius: 24px;
+      padding: 20px 24px;
+      text-align: center;
+      box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.85),
+        0 0 36px rgba(212, 175, 55, 0.14),
+        inset 0 1px 0 rgba(243, 210, 122, 0.25);
+      opacity: 0;
+      transform: translate3d(0, 24px, 0) scale(0.98);
+      transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    #intro-overlay.act-2 #intro-epigraph-card {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      pointer-events: auto;
+    }
+
+    #intro-overlay.act-3 #intro-epigraph-card {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0) scale(0.96);
+      pointer-events: none;
+      transition: opacity 0.38s ease, transform 0.38s ease;
+    }
+
+    @keyframes enterBtnPulse {
+      0%, 100% {
+        box-shadow: 0 8px 26px rgba(212, 175, 55, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      }
+      50% {
+        box-shadow: 0 10px 38px rgba(243, 210, 122, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+    }
+
+    #enter-vault-btn {
+      touch-action: manipulation;
+      min-height: 50px;
+      animation: enterBtnPulse 2.6s ease-in-out infinite;
+    }
+
+    /* Revelação escalonada da Tela Inicial após o Ato III */
+    .stagger-item {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #start-screen.stagger-revealed .stagger-item {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    #start-screen.stagger-revealed .stagger-delay-1 { transition-delay: 0.05s; }
+    #start-screen.stagger-revealed .stagger-delay-2 { transition-delay: 0.14s; }
+    #start-screen.stagger-revealed .stagger-delay-3 { transition-delay: 0.23s; }
+    #start-screen.stagger-revealed .stagger-delay-4 { transition-delay: 0.32s; }
+    #start-screen.stagger-revealed .stagger-delay-5 { transition-delay: 0.41s; }
+
+    /* ==========================================================================
+       3. TRANSIÇÃO DE MERGULHO NO ASTROLÁBIO (#expedition-dive-overlay)
+       ========================================================================== */
+    #expedition-dive-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      min-height: 100vh;
+      z-index: 9000;
+      background: radial-gradient(circle at 50% 50%, #141c2e 0%, #0b0e14 75%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    #expedition-dive-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dive-ring {
+      transform-origin: 160px 160px;
+      transition: transform 1.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ==========================================================================
+       4. ESTILOS DO GRIMÓRIO APRIMORADO (FRAÇÕES EMPILHADAS EM CSS)
+       ========================================================================== */
+    .grimorio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+      gap: 0.95rem;
+    }
+
+    .formula-card {
+      background: linear-gradient(145deg, rgba(18, 24, 38, 0.96), rgba(11, 14, 20, 0.99));
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      border-radius: 14px;
+      padding: 0.95rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.7rem;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .formula-card:hover {
+      border-color: rgba(243, 210, 122, 0.65);
+      transform: translateY(-2px);
+    }
+
+    .formula-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .formula-title {
+      font-family: 'Cinzel', serif;
+      color: #f3d27a;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .formula-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.14);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: #f3d27a;
+      font-weight: 600;
+    }
+
+    .formula-tag.ordem-sim {
+      background: rgba(56, 189, 248, 0.13);
+      border-color: rgba(56, 189, 248, 0.38);
+      color: #7dd3fc;
+    }
+
+    .formula-tag.ordem-nao {
+      background: rgba(16, 185, 129, 0.13);
+      border-color: rgba(16, 185, 129, 0.38);
+      color: #6ee7b7;
+    }
+
+    .math-box {
+      background: rgba(7, 10, 15, 0.85);
+      border: 1px dashed rgba(212, 175, 55, 0.28);
+      border-radius: 10px;
+      padding: 0.8rem 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      color: #f8fafc;
+      min-height: 68px;
+    }
+
+    .math-box sub,
+    .math-box sup {
+      font-size: 0.72em;
+      line-height: 0;
+      color: #f3d27a;
+    }
+
+    /* Fração Matemática Empilhada Real */
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      margin: 0 0.25rem;
+      line-height: 1.25;
+    }
+
+    .frac .num {
+      padding: 0 0.45rem 0.22rem;
+      border-bottom: 1.5px solid #d4af37;
+      text-align: center;
+    }
+
+    .frac .den {
+      padding: 0.22rem 0.45rem 0;
+      text-align: center;
+    }
+
+    .formula-desc {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.46;
+    }
+
+    .formula-exemplo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.45rem 0.65rem;
+      border-radius: 8px;
+      border-left: 2px solid #d4af37;
+    }
+
+    /* ==========================================================================
+       5. OVERLAY DE PAUSA COM DESFOQUE ANTI-CONSULTA
+       ========================================================================== */
+    .pause-backdrop {
+      background: rgba(7, 10, 15, 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .game-screen-blurred {
+      filter: blur(12px) brightness(0.42);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ==========================================================================
+       6. ASTROLÁBIO INTERATIVO SVG E ANIMAÇÕES DE FEEDBACK
+       ========================================================================== */
+    .astrolabe-container {
+      width: 100%;
+      max-width: 370px;
+      aspect-ratio: 1 / 1;
+    }
+
+    .astrolabe-ring {
+      transform-origin: 220px 220px;
+      transition: transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.5s ease;
+    }
+
+    @keyframes crystalShake {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      20% { transform: translate3d(-7px, 0, 0); }
+      40% { transform: translate3d(7px, 0, 0); }
+      60% { transform: translate3d(-5px, 0, 0); }
+      80% { transform: translate3d(5px, 0, 0); }
+    }
+
+    .shake-alert {
+      animation: crystalShake 0.45s ease-in-out;
+    }
+
+    .astrolabe-crimson-flash {
+      border-color: rgba(239, 68, 68, 0.88) !important;
+      box-shadow: 0 0 34px rgba(239, 68, 68, 0.38), inset 0 0 22px rgba(239, 68, 68, 0.22) !important;
+      animation: crystalShake 0.45s ease-in-out;
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translate3d(0, 12px, 0); }
+      to { opacity: 1; transform: translate3d(0, 0, 0); }
+    }
+
+    .animate-fade-up {
+      animation: fadeSlideUp 0.35s ease forwards;
+    }
+
+    /* ==========================================================================
+       7. RESPONSIVIDADE MOBILE DEDICADA (@media max-width: 768px e 480px)
+       ========================================================================== */
+    @media (max-width: 768px) {
+      .astrolabe-container {
+        max-width: 280px;
+      }
+      #intro-epigraph-card {
+        padding: 16px 18px;
+      }
+      #intro-orbit-hint {
+        display: none;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .astrolabe-container {
+        max-width: 236px;
+      }
+      #intro-epigraph-card {
+        padding: 14px 15px;
+      }
+    }
+
+    /* Scrollbar refinada */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0e14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.38);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-brass selection:text-obsidian">
+
+  <!-- Canvas 2D de Fundo: Estrelas e Poeira Dourada -->
+  <canvas id="cosmic-canvas" aria-hidden="true"></canvas>
+
+  <!-- Geometria Astral de Fundo (SVG Sutil) -->
+  <div class="fixed inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden opacity-[0.06]" aria-hidden="true">
+    <svg viewBox="0 0 800 800" class="w-[95vmax] h-[95vmax] text-brass">
+      <circle cx="400" cy="400" r="380" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="6 8" />
+      <circle cx="400" cy="400" r="310" fill="none" stroke="currentColor" stroke-width="0.8" />
+      <circle cx="400" cy="400" r="230" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="2 6" />
+      <polygon points="400,20 730,590 70,590" fill="none" stroke="currentColor" stroke-width="0.8" />
+      <polygon points="400,780 730,210 70,210" fill="none" stroke="currentColor" stroke-width="0.8" />
+    </svg>
+  </div>
+
+  <!-- ==========================================================================
+       1. ABERTURA CINEMATOGRÁFICA 3D WEBGL (#intro-overlay)
+          "O Despertar do Cofre de Babel"
+       ========================================================================== -->
+  <div id="intro-overlay" role="dialog" aria-modal="true" aria-label="Prólogo 3D: O Despertar do Cofre de Babel">
+
+    <!-- Canvas 3D Three.js r128 -->
+    <canvas id="intro-3d-canvas"></canvas>
+
+    <!-- Fallback SVG caso WebGL esteja indisponível -->
+    <div id="intro-webgl-fallback" aria-hidden="true">
+      <svg viewBox="0 0 320 320" class="w-72 h-72 opacity-90">
+        <circle cx="160" cy="160" r="145" fill="none" stroke="#d4af37" stroke-width="2" stroke-dasharray="14 6" />
+        <circle cx="160" cy="160" r="115" fill="none" stroke="#f3d27a" stroke-width="2" />
+        <circle cx="160" cy="160" r="85" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="10 5" />
+        <circle cx="160" cy="160" r="55" fill="none" stroke="#d4af37" stroke-width="2" />
+        <circle cx="160" cy="160" r="24" fill="#f3d27a" opacity="0.85" />
+      </svg>
+    </div>
+
+    <!-- Vinheta Cinematográfica -->
+    <div class="intro-vignette" aria-hidden="true"></div>
+
+    <!-- Clarão Dourado do Mergulho 3D (Ato III) -->
+    <div id="intro-flash-veil" aria-hidden="true"></div>
+
+    <!-- Dica Discreta de Órbita Interativa -->
+    <div id="intro-orbit-hint" aria-hidden="true">
+      <span class="text-cyanbio">✦</span>
+      <span>Mova o cursor para orbitar a Esfera Armilar 3D</span>
+    </div>
+
+    <!-- Botão Pular Prólogo Fixo no Topo Direito (z-index: 10005) -->
+    <button id="btn-skip-intro" type="button" onclick="skipIntroSequence(event)">
+      <span>Pular Prólogo</span>
+      <span>⏭</span>
+    </button>
+
+    <!-- Card de Vidro Obsidiana Escuro (Ato II — Pausado para Leitura Confortável) -->
+    <div id="intro-stage-container">
+      <div id="intro-epigraph-card">
+        <div class="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-brasslight mb-1.5">
+          <span>✦</span>
+          <span>O Despertar do Cofre de Babel</span>
+          <span>✦</span>
+        </div>
+
+        <h2 class="font-display text-xl sm:text-2xl md:text-3xl font-extrabold gold-gradient-text tracking-wide mb-0.5">
+          O COFRE DE BABEL
+        </h2>
+        <p class="font-display text-xs sm:text-sm uppercase tracking-widest text-cyanbio mb-3">
+          A Relojoaria das Possibilidades
+        </p>
+
+        <p class="font-display text-xs sm:text-base text-parchment/95 leading-relaxed italic mb-4 max-w-2xl mx-auto">
+          “No coração da Biblioteca Infinita, cada engrenagem guarda um universo de arranjos possíveis. Apenas quem domina a arte da contagem poderá alinhar os cinco anéis do tempo e escapar.”
+        </p>
+
+        <button id="enter-vault-btn" type="button" onclick="openVaultDoors()"
+          class="btn-brass w-full sm:w-auto px-7 sm:px-9 py-3.5 rounded-2xl font-display text-sm sm:text-base uppercase tracking-wider inline-flex items-center justify-center gap-2.5 cursor-pointer">
+          <span>✦ Abrir as Portas do Cofre</span>
+          <span class="text-lg">→</span>
+        </button>
+
+        <p class="mt-2.5 font-mono text-[10px] sm:text-[11px] text-parchment/55">
+          Leia no seu ritmo • Clique acima ou pressione <span class="text-brasslight">Enter</span> para mergulhar no observatório
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       TRANSIÇÃO DE MERGULHO NO ASTROLÁBIO (#expedition-dive-overlay)
+       ========================================================================== -->
+  <div id="expedition-dive-overlay" aria-hidden="true">
+    <div class="max-w-md w-full text-center flex flex-col items-center">
+      <div class="w-56 h-56 sm:w-64 sm:h-64 mb-5">
+        <svg viewBox="0 0 320 320" class="w-full h-full">
+          <circle cx="160" cy="160" r="150" fill="rgba(11,14,20,0.9)" stroke="rgba(212,175,55,0.4)" stroke-width="1.5" />
+          <circle id="dive-ring-1" class="dive-ring" cx="160" cy="160" r="134" fill="none" stroke="#f3d27a" stroke-width="2.6" stroke-dasharray="28 10" />
+          <circle id="dive-ring-2" class="dive-ring" cx="160" cy="160" r="110" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-dasharray="20 8" />
+          <circle id="dive-ring-3" class="dive-ring" cx="160" cy="160" r="86" fill="none" stroke="#f3d27a" stroke-width="2.2" stroke-dasharray="16 6" />
+          <circle id="dive-ring-4" class="dive-ring" cx="160" cy="160" r="62" fill="none" stroke="#10b981" stroke-width="2.0" stroke-dasharray="12 5" />
+          <circle id="dive-ring-5" class="dive-ring" cx="160" cy="160" r="38" fill="none" stroke="#f3d27a" stroke-width="2.4" />
+          <polygon points="160,136 184,160 160,184 136,160" fill="#0b0e14" stroke="#38bdf8" stroke-width="2" />
+          <circle cx="160" cy="160" r="5" fill="#f3d27a" />
+        </svg>
+      </div>
+      <span class="font-mono text-xs uppercase tracking-widest text-cyanbio mb-1.5">
+        SINCRONIZANDO MECANISMOS...
+      </span>
+      <h2 class="font-display text-2xl sm:text-3xl font-bold gold-gradient-text mb-1">
+        Câmara I — Câmara da Ampulheta
+      </h2>
+      <p class="font-mono text-xs text-parchment/75">
+        Princípio Fundamental da Contagem • Nível Fácil • 1 Acerto
+      </p>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       CONTAINER PRINCIPAL DA APLICAÇÃO
+       ========================================================================== -->
+  <div class="relative z-10 min-h-screen flex flex-col">
+
+    <!-- BARRA SUPERIOR DE INSTRUMENTAÇÃO (HUD) -->
+    <header id="game-hud" class="hidden sticky top-0 z-30 border-b border-brass/30 bg-obsidian/95 shadow-[0_6px_24px_rgba(0,0,0,0.6)]">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2">
+
+        <!-- Identidade do Cofre + Câmara Atual -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-brass/55 bg-deepblue flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-brasslight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="font-display text-xs sm:text-sm font-bold tracking-wider gold-gradient-text truncate">
+                O COFRE DE BABEL
+              </h1>
+              <span id="hud-diff-pill" class="hidden sm:inline-block font-mono text-[10px] px-2 py-0.5 rounded-full bg-emeraldseal/15 text-emeraldseal border border-emeraldseal/35">
+                Fácil
+              </span>
+            </div>
+            <p id="hud-chamber-subtitle" class="font-mono text-[11px] text-parchment/75 truncate">
+              Câmara I • Câmara da Ampulheta
+            </p>
+          </div>
+        </div>
+
+        <!-- Controles Rápidos na HUD -->
+        <div class="flex items-center gap-1.5 order-2 lg:order-3">
+          <button type="button" onclick="openGrimoireModal()"
+            class="px-2.5 py-1.5 sm:py-2 rounded-xl btn-obsidian text-xs flex items-center gap-1 text-brasslight border-brass/45 cursor-pointer"
+            title="Abrir Grimório de Fórmulas">
+            <span>📖</span>
+            <span class="hidden sm:inline font-medium">Grimório</span>
+          </button>
+
+          <button id="btn-toggle-music" type="button" onclick="SoundEngine.toggleMusic()"
+            class="p-1.5 sm:p-2 rounded-xl btn-obsidian text-xs flex items-center gap-1 cursor-pointer"
+            title="Alternar Música Ambiente">
+            <span id="icon-music">🎵</span>
+          </button>
+
+          <button id="btn-toggle-sfx" type="button" onclick="SoundEngine.toggleMute()"
+            class="p-1.5 sm:p-2 rounded-xl btn-obsidian text-xs flex items-center gap-1 cursor-pointer"
+            title="Silenciar / Ativar Efeitos Sonoros">
+            <span id="icon-sfx">🔊</span>
+          </button>
+
+          <button id="btn-pause-game" type="button" onclick="openPauseModal()"
+            class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl btn-obsidian text-xs font-mono font-semibold flex items-center gap-1 text-brasslight border-brass/55 cursor-pointer"
+            title="Pausar Expedição (Atalho: ESC)">
+            <span>⏸</span>
+            <span>Pausar</span>
+          </button>
+        </div>
+
+        <!-- Indicadores de Progresso: 12 Segmentos, Cristais (3) e Cronômetro (15:00) -->
+        <div class="flex items-center gap-1.5 sm:gap-3 order-3 lg:order-2 w-full lg:w-auto justify-between lg:justify-center border-t lg:border-t-0 border-brass/15 pt-1.5 lg:pt-0">
+
+          <!-- Barra de Progresso Global (12 Segmentos) -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl vault-panel-inner border border-brass/25" title="Progresso Global: 12 Selos para escapar">
+            <span class="text-[10px] uppercase tracking-wider text-parchment/65 hidden md:inline">Selos:</span>
+            <div id="hud-global-segments" class="flex items-center gap-0.5">
+              <!-- 12 segmentos gerados via JS -->
+            </div>
+            <span class="font-mono text-xs font-bold text-cyanbio ml-0.5">
+              <span id="hud-total-correct">0</span><span class="text-parchment/50">/12</span>
+            </span>
+          </div>
+
+          <!-- Cristais de Contenção (3 Erros Máx.) -->
+          <div class="flex items-center gap-1 px-2.5 py-1 rounded-xl vault-panel-inner border border-brass/25" title="Cristais de Contenção: 3 falhas colapsam o cofre">
+            <span class="text-[10px] uppercase tracking-wider text-parchment/65 hidden md:inline mr-0.5">Cristais:</span>
+            <div id="hud-crystals" class="flex items-center gap-0.5">
+              <!-- Renderizado dinamicamente via JS -->
+            </div>
+          </div>
+
+          <!-- Estabilidade Temporal (Cronômetro 15:00) -->
+          <div id="hud-timer-box" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl vault-panel-inner border border-brass/35 transition-colors">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-brasslight shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="13" r="8" />
+              <path d="M12 9v4l2.5 2.5M9 2h6" />
+            </svg>
+            <span id="hud-timer" class="font-mono text-xs sm:text-sm font-bold text-brasslight tracking-wider">15:00</span>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ========================================================================
+         1. TELA DE INÍCIO (#start-screen)
+         ======================================================================== -->
+    <main id="start-screen" class="flex-1 flex items-center justify-center px-3 sm:px-4 py-6 sm:py-10">
+      <div class="max-w-5xl w-full vault-panel rounded-3xl p-5 sm:p-10 md:p-12 text-center relative overflow-hidden">
+
+        <!-- Ornamentos de Canto -->
+        <div class="absolute top-3 left-3 w-7 h-7 border-t-2 border-l-2 border-brass/55 rounded-tl-xl pointer-events-none"></div>
+        <div class="absolute top-3 right-3 w-7 h-7 border-t-2 border-r-2 border-brass/55 rounded-tr-xl pointer-events-none"></div>
+        <div class="absolute bottom-3 left-3 w-7 h-7 border-b-2 border-l-2 border-brass/55 rounded-bl-xl pointer-events-none"></div>
+        <div class="absolute bottom-3 right-3 w-7 h-7 border-b-2 border-r-2 border-brass/55 rounded-br-xl pointer-events-none"></div>
+
+        <!-- Emblema Superior -->
+        <div class="stagger-item stagger-delay-1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brass/40 bg-obsidian/80 text-brasslight text-[11px] sm:text-xs font-mono uppercase tracking-widest mb-4">
+          <span>✦</span>
+          <span>Matemática Discreta • Análise Combinatória</span>
+          <span>✦</span>
+        </div>
+
+        <!-- Título Dramático -->
+        <div class="stagger-item stagger-delay-1">
+          <h1 class="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-wide gold-gradient-text mb-2 leading-tight">
+            O COFRE DE BABEL
+          </h1>
+          <p class="font-display text-sm sm:text-xl text-cyanbio/95 tracking-widest uppercase mb-5">
+            A Relojoaria das Possibilidades
+          </p>
+        </div>
+
+        <!-- Resumo Narrativo -->
+        <div class="stagger-item stagger-delay-2 max-w-3xl mx-auto vault-panel-inner rounded-2xl p-4 sm:p-6 mb-6 text-left sm:text-center border border-brass/25">
+          <p class="text-sm sm:text-base text-parchment/90 leading-relaxed">
+            Nos subterrâneos da <span class="text-brasslight font-semibold">Biblioteca Infinita de Babel</span>, você ativou o
+            <span class="text-cyanbio font-semibold">Astrolábio das Possibilidades</span>. Cinco câmaras seladas bloqueiam a saída com enigmas progressivos de contagem. Alinhe todos os cinco anéis resolvendo <span class="text-brasslight font-semibold">12 desafios combinatórios</span> antes que o pêndulo temporal chegue ao fim.
+          </p>
+        </div>
+
+        <!-- Cards das 5 Câmaras / Selos -->
+        <div class="stagger-item stagger-delay-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3 mb-7 text-left">
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-display text-xs font-bold text-brasslight">FASE I • FÁCIL</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-emeraldseal/15 text-emeraldseal border border-emeraldseal/30">1 acerto</span>
+            </div>
+            <p class="text-xs font-bold text-parchment">Câmara da Ampulheta</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Princípio Fundamental da Contagem</p>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-display text-xs font-bold text-brasslight">FASE II • BÁSICO</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-cyanbio/15 text-cyanbio border border-cyanbio/30">2 acertos</span>
+            </div>
+            <p class="text-xs font-bold text-parchment">Galeria dos Pêndulos</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Permutação Simples e com Repetição</p>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-display text-xs font-bold text-brasslight">FASE III • INTERM.</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-brass/20 text-brasslight border border-brass/35">2 acertos</span>
+            </div>
+            <p class="text-xs font-bold text-parchment">Salão das Engrenagens</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Arranjo Simples</p>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-display text-xs font-bold text-brasslight">FASE IV • AVANÇADO</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">3 acertos</span>
+            </div>
+            <p class="text-xs font-bold text-parchment">Cúpula Celestial</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Combinação Simples</p>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25 sm:col-span-2 lg:col-span-1">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-display text-xs font-bold text-brasslight">FASE V • DIFÍCIL</span>
+              <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-crimsonalert/20 text-crimsonalert border border-crimsonalert/30">4 acertos</span>
+            </div>
+            <p class="text-xs font-bold text-parchment">Santuário do Astrolábio</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Integração e Restrições Avançadas</p>
+          </div>
+        </div>
+
+        <!-- Regras Rápidas -->
+        <div class="stagger-item stagger-delay-4 flex flex-wrap items-center justify-center gap-3 sm:gap-7 text-xs text-parchment/80 mb-7 font-mono">
+          <span class="flex items-center gap-1.5"><span class="text-brasslight">🏛️</span> 5 Câmaras</span>
+          <span class="flex items-center gap-1.5"><span class="text-cyanbio">◆</span> 12 Acertos</span>
+          <span class="flex items-center gap-1.5"><span class="text-emeraldseal">⏳</span> 15:00</span>
+          <span class="flex items-center gap-1.5"><span>💎</span> 3 Cristais de Contenção</span>
+        </div>
+
+        <!-- Botões de Ação da Tela Inicial -->
+        <div class="stagger-item stagger-delay-5 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5">
+          <button type="button" onclick="startGame()"
+            class="btn-brass w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl font-display text-base sm:text-lg tracking-wider uppercase inline-flex items-center justify-center gap-3 cursor-pointer">
+            <span>Iniciar Expedição</span>
+            <span class="text-xl">→</span>
+          </button>
+
+          <button type="button" onclick="openQuestionBankModal()"
+            class="btn-obsidian w-full sm:w-auto px-5 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm tracking-wide inline-flex items-center justify-center gap-2 text-brasslight border-brass/45 cursor-pointer">
+            <span>📜</span>
+            <span>Consultar Banco Completo (50 Questões)</span>
+          </button>
+
+          <button type="button" onclick="playIntroSequence(true)"
+            class="btn-obsidian w-full sm:w-auto px-5 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm tracking-wide inline-flex items-center justify-center gap-2 text-cyanbio border-cyanbio/40 cursor-pointer"
+            title="Assistir novamente à abertura 3D do Cofre de Babel">
+            <span>✦</span>
+            <span>Rever Prólogo</span>
+          </button>
+
+          <button id="btn-start-sound-toggle" type="button" onclick="SoundEngine.toggleMute()"
+            class="btn-obsidian w-full sm:w-auto px-5 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm tracking-wide inline-flex items-center justify-center gap-2 text-parchment/90 border-brass/35 cursor-pointer">
+            <span id="start-sound-label">🔊 Som Ativo</span>
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ========================================================================
+         2. TELA PRINCIPAL DO JOGO (#game-screen)
+         ======================================================================== -->
+    <main id="game-screen" class="hidden flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 transition-all duration-200">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+
+        <!-- COLUNA ESQUERDA: ASTROLÁBIO INTERATIVO DE BABEL & LORE DA CÂMARA -->
+        <section id="astrolabe-panel" class="lg:col-span-5 vault-panel rounded-3xl p-4 sm:p-6 flex flex-col items-center transition-all">
+
+          <div class="w-full flex items-center justify-between mb-2">
+            <span class="font-display text-xs uppercase tracking-widest text-brasslight">Astrolábio de Babel</span>
+            <span id="astrolabe-status-pill" class="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-cyanbio/15 text-cyanbio border border-cyanbio/35">
+              Anel I Ativo (0/1)
+            </span>
+          </div>
+
+          <!-- SVG INTERATIVO DE 5 ANÉIS CONCÊNTRICOS (1 + 2 + 2 + 3 + 4 = 12 NÓS) -->
+          <div class="astrolabe-container relative my-1 select-none flex items-center justify-center">
+            <svg id="babel-astrolabe" viewBox="0 0 440 440" class="w-full h-full">
+              <!-- Fundo do Mostrador -->
+              <circle cx="220" cy="220" r="210" fill="rgba(11, 14, 20, 0.90)" stroke="rgba(212, 175, 55, 0.38)" stroke-width="1.6" />
+
+              <!-- Mostrador Externo Graduado -->
+              <g id="astrolabe-outer-ticks" stroke="rgba(212, 175, 55, 0.36)" stroke-width="1"></g>
+
+              <!-- Filigrana Interna -->
+              <g stroke="rgba(56, 189, 248, 0.14)" stroke-width="0.9" fill="none">
+                <circle cx="220" cy="220" r="193" stroke-dasharray="4 10" />
+                <polygon points="220,30 384,315 56,315" />
+                <polygon points="220,410 384,125 56,125" />
+              </g>
+
+              <!-- Linhas Cardeais de Referência -->
+              <g stroke="rgba(212, 175, 55, 0.15)" stroke-width="1" stroke-dasharray="3 4">
+                <line x1="220" y1="14" x2="220" y2="426" />
+                <line x1="14" y1="220" x2="426" y2="220" />
+                <line x1="74" y1="74" x2="366" y2="366" />
+                <line x1="366" y1="74" x2="74" y2="366" />
+              </g>
+
+              <!-- Grupo Dinâmico dos 5 Anéis Concêntricos e 12 Nós de Trava -->
+              <g id="astrolabe-rings-layer"></g>
+
+              <!-- Núcleo Central -->
+              <g>
+                <circle cx="220" cy="220" r="30" fill="rgba(56, 189, 248, 0.16)" />
+                <circle cx="220" cy="220" r="22" fill="#0B0E14" stroke="#f3d27a" stroke-width="2" />
+                <polygon points="220,204 233,220 220,236 207,220" fill="none" stroke="#38BDF8" stroke-width="1.5" />
+                <circle id="astrolabe-core-dot" cx="220" cy="220" r="4.5" fill="#f3d27a" />
+              </g>
+            </svg>
+          </div>
+
+          <!-- Legenda Rápida das Cores do Astrolábio -->
+          <div class="w-full flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px] font-mono text-parchment/65 mb-2.5">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brasslight inline-block"></span> Ativo</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyanbio inline-block"></span> Nó Aceso</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emeraldseal inline-block"></span> Anel Alinhado</span>
+          </div>
+
+          <!-- Progresso da Câmara Atual -->
+          <div class="w-full vault-panel-inner rounded-2xl p-3 sm:p-3.5 border border-brass/25">
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span class="text-parchment/80 font-medium">Acertos na Câmara:</span>
+              <span id="phase-progress-text" class="font-mono font-bold text-brasslight">0 / 1</span>
+            </div>
+            <div id="phase-nodes-bar" class="flex items-center gap-2">
+              <!-- Segmentos de progresso da fase atual -->
+            </div>
+          </div>
+
+          <!-- Lore Narrativa da Câmara -->
+          <div class="w-full vault-panel-inner rounded-2xl p-3.5 sm:p-4 mt-3 border border-brass/20">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-brasslight text-sm">📜</span>
+              <h3 id="chamber-lore-title" class="font-display text-xs sm:text-sm font-bold text-brasslight tracking-wide">
+                Câmara I: Câmara da Ampulheta
+              </h3>
+            </div>
+            <p id="chamber-lore-desc" class="text-xs sm:text-[13px] text-parchment/80 leading-relaxed">
+              Engrenagens de latão bloqueiam a primeira comporta. Multiplique as possibilidades de cada disco pelo Princípio Fundamental da Contagem para alinhar o primeiro anel.
+            </p>
+          </div>
+
+        </section>
+
+        <!-- COLUNA DIREITA: CONSOLE DE ENIGMAS & PERGAMINHO DE RESOLUÇÃO -->
+        <section id="puzzle-console" class="lg:col-span-7 vault-panel rounded-3xl p-4 sm:p-8 transition-all">
+
+          <!-- Cabeçalho da Questão: Fase, Dificuldade e Conteúdo -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3.5 mb-4 border-b border-brass/25">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="q-phase-badge" class="font-display text-xs font-bold px-3 py-1 rounded-full bg-brass/20 text-brasslight border border-brass/40">
+                CÂMARA I DE V
+              </span>
+              <span id="q-difficulty-badge" class="font-mono text-xs px-2.5 py-1 rounded-full bg-emeraldseal/15 text-emeraldseal border border-emeraldseal/35">
+                Nível: Fácil
+              </span>
+            </div>
+            <span id="q-topic-badge" class="font-mono text-[11px] sm:text-xs text-cyanbio bg-cyanbio/10 border border-cyanbio/30 px-2.5 sm:px-3 py-1 rounded-full">
+              Princípio Fundamental da Contagem
+            </span>
+          </div>
+
+          <!-- Número / Identificador do Enigma -->
+          <div class="flex items-center justify-between mb-2">
+            <span id="q-counter-label" class="font-mono text-xs uppercase tracking-widest text-parchment/60">
+              Enigma #1 • Câmara da Ampulheta
+            </span>
+            <span class="text-[11px] font-mono text-parchment/45 hidden sm:inline">Atalhos: A–E • Pausa: ESC</span>
+          </div>
+
+          <!-- Enunciado do Problema -->
+          <div id="q-stem" class="text-sm sm:text-[17px] text-parchment leading-relaxed font-normal mb-5 sm:mb-6">
+            <!-- Texto da questão injetado via JS -->
+          </div>
+
+          <!-- Lista de Alternativas (A, B, C, D, E) -->
+          <div id="q-options" class="space-y-2.5 sm:space-y-3" role="radiogroup" aria-label="Alternativas da questão">
+            <!-- Botões gerados via JS -->
+          </div>
+
+          <!-- PERGAMINHO DE RESOLUÇÃO (Exibido após o jogador responder) -->
+          <div id="resolution-drawer" class="hidden mt-5 sm:mt-6 rounded-2xl border p-4 sm:p-6 animate-fade-up">
+            <div class="flex items-start gap-3 mb-3">
+              <div id="res-icon-badge" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 font-bold">
+                ✓
+              </div>
+              <div>
+                <h4 id="res-status-title" class="font-display text-base sm:text-lg font-bold tracking-wide">
+                  Trava Destravada!
+                </h4>
+                <p id="res-status-subtitle" class="text-xs text-parchment/80">
+                  O mecanismo aceitou sua dedução matemática.
+                </p>
+              </div>
+            </div>
+
+            <!-- Explicação Passo a Passo -->
+            <div class="vault-panel-inner rounded-xl p-3.5 sm:p-4 my-3.5 border border-brass/30">
+              <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-brasslight mb-1.5">
+                <span>✒</span>
+                <span>Pergaminho de Resolução Matemática</span>
+              </div>
+              <p id="res-explanation" class="font-mono text-xs sm:text-[13px] text-parchment/95 leading-relaxed whitespace-pre-line">
+                <!-- Resolução detalhada injetada via JS -->
+              </p>
+            </div>
+
+            <!-- Botão de Próxima Ação -->
+            <div class="flex justify-end">
+              <button id="btn-next-step" type="button" onclick="handleNextStep()"
+                class="btn-brass w-full sm:w-auto px-6 py-3 rounded-xl font-display text-xs sm:text-sm tracking-wider uppercase inline-flex items-center justify-center gap-2 cursor-pointer">
+                <span id="btn-next-step-label">Continuar</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ========================================================================
+         3. MODAL DE PAUSA DA EXPEDIÇÃO (#pause-modal)
+         ======================================================================== -->
+    <div id="pause-modal" class="hidden fixed inset-0 z-50 pause-backdrop flex items-center justify-center p-4">
+      <div class="max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-8 text-center border-2 border-brass/50 relative overflow-hidden animate-fade-up">
+
+        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3.5 rounded-full bg-brass/15 border-2 border-brasslight flex items-center justify-center text-2xl text-brasslight">
+          ⏸
+        </div>
+
+        <span class="font-mono text-[11px] uppercase tracking-widest text-cyanbio">
+          ESTABILIDADE TEMPORAL SUSPENSA
+        </span>
+        <h2 class="font-display text-2xl sm:text-3xl font-extrabold gold-gradient-text mt-1 mb-2">
+          Expedição Pausada
+        </h2>
+        <p class="text-xs sm:text-sm text-parchment/75 mb-5">
+          O cronômetro do observatório foi congelado e o enigma atual está oculto sob véu óptico.
+        </p>
+
+        <!-- Resumo do Status Atual -->
+        <div class="grid grid-cols-2 gap-2.5 mb-6 text-left">
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <span class="block font-mono text-[10px] uppercase tracking-wider text-parchment/55">Câmara Atual</span>
+            <span id="pause-stat-chamber" class="block font-display text-xs sm:text-sm font-bold text-brasslight mt-0.5 truncate">
+              Câmara I • Ampulheta
+            </span>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <span class="block font-mono text-[10px] uppercase tracking-wider text-parchment/55">Acertos Totais</span>
+            <span id="pause-stat-seals" class="block font-mono text-sm sm:text-base font-bold text-emeraldseal mt-0.5">
+              0 / 12 Selos
+            </span>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <span class="block font-mono text-[10px] uppercase tracking-wider text-parchment/55">Cristais Restantes</span>
+            <span id="pause-stat-crystals" class="block font-mono text-sm sm:text-base font-bold text-cyanbio mt-0.5">
+              3 / 3 Cristais
+            </span>
+          </div>
+
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <span class="block font-mono text-[10px] uppercase tracking-wider text-parchment/55">Tempo Restante</span>
+            <span id="pause-stat-time" class="block font-mono text-sm sm:text-base font-bold text-brasslight mt-0.5">
+              15:00
+            </span>
+          </div>
+        </div>
+
+        <!-- 3 Botões Principais de Controle -->
+        <div class="space-y-2.5">
+          <button type="button" onclick="closePauseModal()"
+            class="btn-brass w-full py-3.5 px-5 rounded-2xl font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer">
+            <span>▶</span>
+            <span>Continuar Expedição</span>
+          </button>
+
+          <button id="btn-pause-restart" type="button" onclick="handlePauseRestartClick()"
+            class="btn-obsidian w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 text-brasslight border-brass/40 cursor-pointer">
+            <span>↺</span>
+            <span id="label-pause-restart">Reiniciar Partida</span>
+          </button>
+
+          <button id="btn-pause-menu" type="button" onclick="handlePauseMenuClick()"
+            class="btn-obsidian w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 text-parchment/85 border-brass/30 cursor-pointer">
+            <span>⌂</span>
+            <span id="label-pause-menu">Voltar ao Menu Principal</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         4. OVERLAY DE TRANSIÇÃO ENTRE FASES
+         ======================================================================== -->
+    <div id="phase-transition-modal" class="hidden fixed inset-0 z-40 bg-obsidian/92 flex items-center justify-center p-4">
+      <div class="max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-9 text-center border-2 border-emeraldseal/55 animate-fade-up">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emeraldseal/15 border-2 border-emeraldseal flex items-center justify-center text-2xl text-emeraldseal shadow-[0_0_28px_rgba(16,185,129,0.4)]">
+          ✦
+        </div>
+        <p id="trans-badge" class="font-mono text-xs uppercase tracking-widest text-emeraldseal mb-2">
+          ANEL I ALINHADO EM ESMERALDA
+        </p>
+        <h2 id="trans-title" class="font-display text-2xl sm:text-3xl font-bold gold-gradient-text mb-3">
+          Câmara II: Galeria dos Pêndulos
+        </h2>
+        <p id="trans-desc" class="text-sm text-parchment/85 leading-relaxed mb-6">
+          O primeiro anel de latão gira em harmonia e libera a passagem para a Galeria dos Pêndulos.
+        </p>
+        <button type="button" onclick="closePhaseTransition()"
+          class="btn-brass w-full py-3.5 rounded-xl font-display text-sm uppercase tracking-wider cursor-pointer">
+          Adentrar Nova Câmara →
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         5. MODAL DO GRIMÓRIO DE FÓRMULAS (#grimorio-modal)
+         ======================================================================== -->
+    <div id="grimorio-modal" class="hidden fixed inset-0 z-50 bg-obsidian/92 flex items-center justify-center p-3 sm:p-5">
+      <div class="max-w-5xl w-full vault-panel rounded-3xl p-4 sm:p-8 max-h-[90dvh] flex flex-col animate-fade-up">
+        <div class="flex items-center justify-between pb-3.5 mb-3.5 border-b border-brass/25">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">📖</span>
+            <div>
+              <h3 class="font-display text-base sm:text-2xl font-bold gold-gradient-text">Grimório de Análise Combinatória</h3>
+              <p class="font-mono text-[11px] sm:text-xs text-parchment/65">Códice de consulta rápida do Aprendiz de Relojoeiro</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeGrimoireModal()"
+            class="w-9 h-9 rounded-xl btn-obsidian flex items-center justify-center text-parchment/80 hover:text-brasslight cursor-pointer"
+            aria-label="Fechar Grimório">
+            ✕
+          </button>
+        </div>
+
+        <div class="overflow-y-auto pr-1 flex-1">
+          <div class="grimorio-grid">
+
+            <!-- 1. Princípio Multiplicativo -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">1. Princípio Multiplicativo</span>
+                <span class="formula-tag">Etapas Independentes</span>
+              </div>
+              <div class="math-box">
+                <span>Total = n<sub>1</sub> × n<sub>2</sub> × ... × n<sub>k</sub></span>
+              </div>
+              <p class="formula-desc">
+                Multiplique o número de possibilidades de cada escolha independente. Comece sempre pelas etapas com restrição.
+              </p>
+              <div class="formula-exemplo">
+                Ex.: 4 lentes × 3 aros × 5 prismas = <strong>60</strong> filtros.
+              </div>
+            </div>
+
+            <!-- 2. Permutação Simples -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">2. Permutação Simples</span>
+                <span class="formula-tag ordem-sim">Usa todos • Ordem IMPORTA</span>
+              </div>
+              <div class="math-box">
+                <span>P<sub>n</sub> = n! = n · (n − 1) · ... · 1</span>
+              </div>
+              <p class="formula-desc">
+                Reorganiza todos os <strong>n</strong> elementos distintos em sequência linear (fila ou anagramas sem repetição).
+              </p>
+              <div class="formula-exemplo">
+                Ex.: Anagramas de TEMPO → P<sub>5</sub> = 5! = <strong>120</strong>.
+              </div>
+            </div>
+
+            <!-- 3. Permutação com Repetição -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">3. Permutação c/ Repetição</span>
+                <span class="formula-tag ordem-sim">Elementos idênticos</span>
+              </div>
+              <div class="math-box">
+                <span>P<sub>n</sub><sup>(a, b, ...)</sup> =</span>
+                <span class="frac">
+                  <span class="num">n!</span>
+                  <span class="den">a! · b! · ...</span>
+                </span>
+              </div>
+              <p class="formula-desc">
+                Divide o fatorial total pelo fatorial de cada grupo de elementos idênticos entre si.
+              </p>
+              <div class="formula-exemplo">
+                Ex.: BABEL (5 letras, 2 'B') → 5! / 2! = <strong>60</strong>.
+              </div>
+            </div>
+
+            <!-- 4. Permutação Circular -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">4. Permutação Circular</span>
+                <span class="formula-tag ordem-sim">Mesa / Roda circular</span>
+              </div>
+              <div class="math-box">
+                <span>PC<sub>n</sub> = (n − 1)!</span>
+              </div>
+              <p class="formula-desc">
+                Disposições em círculo onde rotações equivalentes contam como uma única configuração.
+              </p>
+              <div class="formula-exemplo">
+                Ex.: 5 blocos ao redor de uma mesa → (5 − 1)! = <strong>24</strong>.
+              </div>
+            </div>
+
+            <!-- 5. Arranjo Simples -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">5. Arranjo Simples</span>
+                <span class="formula-tag ordem-sim">Subgrupo • Ordem IMPORTA</span>
+              </div>
+              <div class="math-box">
+                <span>A<sub>n, p</sub> =</span>
+                <span class="frac">
+                  <span class="num">n!</span>
+                  <span class="den">(n − p)!</span>
+                </span>
+              </div>
+              <p class="formula-desc">
+                Escolhe <strong>p</strong> elementos distintos dentre <strong>n</strong> onde a posição ou cargo diferencia o resultado.
+              </p>
+              <div class="formula-exemplo">
+                Ex.: Pódio de 3 entre 10 → A<sub>10,3</sub> = 10 × 9 × 8 = <strong>720</strong>.
+              </div>
+            </div>
+
+            <!-- 6. Combinação Simples -->
+            <div class="formula-card">
+              <div class="formula-header">
+                <span class="formula-title">6. Combinação Simples</span>
+                <span class="formula-tag ordem-nao">Subgrupo • Ordem NÃO importa</span>
+              </div>
+              <div class="math-box">
+                <span>C<sub>n, p</sub> =</span>
+                <span class="frac">
+                  <span class="num">n!</span>
+                  <span class="den">p! · (n − p)!</span>
+                </span>
+              </div>
+              <p class="formula-desc">
+                Forma subconjuntos ou comitês de <strong>p</strong> elementos sem hierarquia entre si.
+              </p>
+              <div class="formula-exemplo">
+                Ex.: Misturar 3 essências de 8 → C<sub>8,3</sub> = <strong>56</strong>.
+              </div>
+            </div>
+
+            <!-- 7. Combinação com Repetição (Barras e Bolas) -->
+            <div class="formula-card sm:col-span-2 lg:col-span-1">
+              <div class="formula-header">
+                <span class="formula-title">7. Barras e Bolas (CR)</span>
+                <span class="formula-tag ordem-nao">Itens idênticos • Ordem NÃO importa</span>
+              </div>
+              <div class="math-box">
+                <span>CR<sub>n, p</sub> = C<sub>n+p−1, p</sub> =</span>
+                <span class="frac">
+                  <span class="num">(n + p − 1)!</span>
+                  <span class="den">p! · (n − 1)!</span>
+                </span>
+              </div>
+              <p class="formula-desc">
+                Distribui <strong>p</strong> objetos idênticos em <strong>n</strong> recipientes distintos (x<sub>1</sub> + ... + x<sub>n</sub> = p).
+              </p>
+              <div class="formula-exemplo">
+                Ex.: 7 esferas em 4 acumuladores → C<sub>10,3</sub> = <strong>120</strong>.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="pt-3.5 mt-3.5 border-t border-brass/20 flex justify-end">
+          <button type="button" onclick="closeGrimoireModal()"
+            class="btn-brass px-6 py-2.5 rounded-xl font-display text-xs uppercase tracking-wider cursor-pointer">
+            Fechar Grimório
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         6. MODAL DO BANCO COMPLETO DE 50 QUESTÕES (#bank-modal)
+         ======================================================================== -->
+    <div id="bank-modal" class="hidden fixed inset-0 z-50 bg-obsidian/92 flex items-center justify-center p-3 sm:p-5">
+      <div class="max-w-5xl w-full vault-panel rounded-3xl p-4 sm:p-8 max-h-[90dvh] flex flex-col animate-fade-up">
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 mb-3.5 border-b border-brass/25">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">📜</span>
+            <div>
+              <h3 class="font-display text-base sm:text-2xl font-bold gold-gradient-text">
+                Arquivo Oficial de Babel — 50 Questões Comentadas
+              </h3>
+              <p class="font-mono text-[11px] sm:text-xs text-parchment/70">
+                Banco completo organizado por câmara, gabarito e resolução matemática
+              </p>
+            </div>
+          </div>
+          <button type="button" onclick="closeQuestionBankModal()"
+            class="w-9 h-9 rounded-xl btn-obsidian flex items-center justify-center text-parchment/80 hover:text-brasslight cursor-pointer"
+            aria-label="Fechar Banco de Questões">
+            ✕
+          </button>
+        </div>
+
+        <!-- Filtros por Fase e Busca -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 mb-3.5">
+          <div id="bank-phase-tabs" class="flex flex-wrap items-center gap-1.5">
+            <button type="button" data-phase="all" onclick="filterQuestionBank('all')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs font-bold bg-brass text-obsidian cursor-pointer">
+              Todas (50)
+            </button>
+            <button type="button" data-phase="1" onclick="filterQuestionBank('1')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
+              Fase 1 (10)
+            </button>
+            <button type="button" data-phase="2" onclick="filterQuestionBank('2')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
+              Fase 2 (10)
+            </button>
+            <button type="button" data-phase="3" onclick="filterQuestionBank('3')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
+              Fase 3 (10)
+            </button>
+            <button type="button" data-phase="4" onclick="filterQuestionBank('4')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
+              Fase 4 (10)
+            </button>
+            <button type="button" data-phase="5" onclick="filterQuestionBank('5')"
+              class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
+              Fase 5 (10)
+            </button>
+          </div>
+
+          <input id="bank-search-input" type="text" oninput="renderQuestionBankList()"
+            placeholder="Buscar por tema ou palavra..."
+            class="px-3.5 py-2 rounded-xl bg-obsidian/90 border border-brass/35 text-xs text-parchment placeholder:text-parchment/45 focus:outline-none focus:border-brasslight md:w-64" />
+        </div>
+
+        <!-- Lista Rolável de Questões -->
+        <div id="bank-questions-list" class="overflow-y-auto pr-1 space-y-3.5 flex-1">
+          <!-- Renderizado via JS -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         7. TELA DE VITÓRIA (#victory-screen)
+         ======================================================================== -->
+    <main id="victory-screen" class="hidden flex-1 flex items-center justify-center px-3 sm:px-4 py-8">
+      <div class="max-w-2xl w-full vault-panel rounded-3xl p-6 sm:p-10 text-center border-2 border-emeraldseal/55 animate-fade-up">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full bg-emeraldseal/20 border-2 border-emeraldseal flex items-center justify-center text-3xl sm:text-4xl shadow-[0_0_36px_rgba(16,185,129,0.35)]">
+          🏛️
+        </div>
+        <span class="font-mono text-xs uppercase tracking-widest text-emeraldseal">
+          TODOS OS 5 ANÉIS ALINHADOS • 12/12 SELOS DECIFRADOS
+        </span>
+        <h2 class="font-display text-2xl sm:text-4xl font-extrabold gold-gradient-text mt-2 mb-3">
+          O COFRE DE BABEL SE ABRE!
+        </h2>
+        <p class="text-sm sm:text-base text-parchment/85 leading-relaxed mb-6">
+          Com precisão matemática impecável, você sincronizou todas as engrenagens da Relojoaria das Possibilidades. As portas monumentais da Biblioteca de Babel se abrem diante de você antes do colapso temporal.
+        </p>
+
+        <!-- Estatísticas Finais -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-7">
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <p class="text-[10px] sm:text-[11px] uppercase text-parchment/60 font-mono">Tempo Restante</p>
+            <p id="vic-time" class="font-mono text-base sm:text-xl font-bold text-brasslight mt-1">12:34</p>
+          </div>
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <p class="text-[10px] sm:text-[11px] uppercase text-parchment/60 font-mono">Selos</p>
+            <p class="font-mono text-base sm:text-xl font-bold text-emeraldseal mt-1">12 / 12</p>
+          </div>
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <p class="text-[10px] sm:text-[11px] uppercase text-parchment/60 font-mono">Precisão</p>
+            <p id="vic-accuracy" class="font-mono text-base sm:text-xl font-bold text-cyanbio mt-1">100%</p>
+          </div>
+          <div class="vault-panel-inner rounded-2xl p-3 border border-brass/25">
+            <p class="text-[10px] sm:text-[11px] uppercase text-parchment/60 font-mono">Cristais</p>
+            <p id="vic-crystals" class="font-mono text-base sm:text-xl font-bold text-emeraldseal mt-1">3 / 3</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button type="button" onclick="startGame()"
+            class="btn-brass w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-2xl font-display text-sm sm:text-base uppercase tracking-wider cursor-pointer">
+            Iniciar Nova Expedição ↺
+          </button>
+          <button type="button" onclick="returnToMainMenu()"
+            class="btn-obsidian w-full sm:w-auto px-6 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm uppercase tracking-wider text-parchment/85 cursor-pointer">
+            ⌂ Menu Principal
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========================================================================
+         8. TELA DE DERROTA (#defeat-screen)
+         ======================================================================== -->
+    <main id="defeat-screen" class="hidden flex-1 flex items-center justify-center px-3 sm:px-4 py-8">
+      <div class="max-w-2xl w-full vault-panel rounded-3xl p-6 sm:p-10 text-center border-2 border-crimsonalert/55 animate-fade-up">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full bg-crimsonalert/15 border-2 border-crimsonalert flex items-center justify-center text-3xl sm:text-4xl shadow-[0_0_32px_rgba(239,68,68,0.32)]">
+          ⏳
+        </div>
+        <span id="def-reason-tag" class="font-mono text-xs uppercase tracking-widest text-crimsonalert">
+          FALHA NA CONTENÇÃO DO COFRE
+        </span>
+        <h2 id="def-title" class="font-display text-2xl sm:text-4xl font-extrabold text-parchment mt-2 mb-3">
+          O Mecanismo Travou
+        </h2>
+        <p id="def-narrative" class="text-sm sm:text-base text-parchment/80 leading-relaxed mb-6">
+          Os Cristais de Contenção estilhaçaram diante das inconsistências de cálculo, selando permanentemente as engrenagens do observatório.
+        </p>
+
+        <!-- Resumo da Tentativa -->
+        <div class="grid grid-cols-2 gap-3 max-w-md mx-auto mb-7">
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/20">
+            <p class="text-[11px] uppercase text-parchment/60 font-mono">Selos Decifrados</p>
+            <p id="def-seals" class="font-mono text-xl font-bold text-brasslight mt-1">0 / 12</p>
+          </div>
+          <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/20">
+            <p class="text-[11px] uppercase text-parchment/60 font-mono">Câmara Alcançada</p>
+            <p id="def-chamber" class="font-mono text-xl font-bold text-cyanbio mt-1">Câmara I</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button type="button" onclick="startGame()"
+            class="btn-brass w-full sm:w-auto px-8 py-3.5 sm:py-4 rounded-2xl font-display text-sm sm:text-base uppercase tracking-wider cursor-pointer">
+            Tentar Novamente ↺
+          </button>
+          <button type="button" onclick="returnToMainMenu()"
+            class="btn-obsidian w-full sm:w-auto px-6 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm uppercase tracking-wider text-parchment/85 cursor-pointer">
+            ⌂ Menu Principal
+          </button>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==========================================================================
+       SCRIPT PRINCIPAL: BANCO DE 50 QUESTÕES, CENA 3D THREE.JS, ÁUDIO E LÓGICA
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. BANCO OFICIAL DE QUESTÕES (50 QUESTÕES VERIFICADAS — 10 POR FASE)
+       ========================================================================== */
+    const BANCO_DE_QUESTOES = {
+      fase1: [
+        {
+          tema: "Princípio Fundamental da Contagem",
+          enunciado: "Para atravessar a Câmara da Ampulheta, o Aprendiz precisa calibrar um filtro óptico composto por 1 lente de cristal, 1 aro de latão e 1 prisma de quartzo. Na bancada há 4 lentes, 3 aros e 5 prismas distintos. De quantas maneiras diferentes esse filtro pode ser montado?",
+          alternativas: ["12", "20", "35", "60", "120"],
+          correta: 3,
+          resolucao: "Pelo Princípio Multiplicativo, multiplicamos as opções de cada etapa independente: 4 × 3 × 5 = 60 configurações possíveis."
+        },
+        {
+          tema: "Princípio Fundamental da Contagem",
+          enunciado: "Os corredores da Biblioteca de Babel conectam três câmaras: a Sala dos Mapas, a Galeria dos Pêndulos e o Santuário do Astrolábio. Existem 5 passagens da Sala dos Mapas até a Galeria, e 4 escadarias da Galeria até o Santuário. De quantas maneiras distintas um explorador pode ir da Sala dos Mapas ao Santuário passando pela Galeria?",
+          alternativas: ["9", "16", "20", "25", "40"],
+          correta: 2,
+          resolucao: "Para cada uma das 5 passagens do primeiro trecho, há 4 escadarias no segundo trecho: 5 × 4 = 20 trajetos distintos."
+        },
+        {
+          tema: "Princípio Multiplicativo com Repetição",
+          enunciado: "O primeiro cadeado mecânico do Cofre possui 3 discos giratórios numerados de 0 a 9 (10 algarismos em cada disco), permitindo algarismos repetidos (como 7-7-2). Quantas senhas de 3 algarismos podem ser formadas?",
+          alternativas: ["30", "720", "900", "1.000", "10.000"],
+          correta: 3,
+          resolucao: "Como há 10 algarismos (0 a 9) e a repetição é permitida, cada disco possui 10 opções: 10 × 10 × 10 = 1.000 senhas."
+        },
+        {
+          tema: "Princípio Multiplicativo (Sinais Binários)",
+          enunciado: "Na telegrafia astronômica inspirada no Código Morse, os arquivistas transmitem sinais usando sequências de 4 pulsos luminosos, onde cada pulso pode ser apenas curto (ponto) ou longo (traço). Quantos sinais diferentes de exatamente 4 pulsos podem ser transmitidos?",
+          alternativas: ["8", "12", "16", "24", "32"],
+          correta: 2,
+          resolucao: "Cada um dos 4 pulsos possui 2 escolhas possíveis (ponto ou traço). Logo: 2 × 2 × 2 × 2 = 2⁴ = 16 sinais distintos."
+        },
+        {
+          tema: "Princípio Multiplicativo com Exclusão",
+          enunciado: "Em uma placa de bronze inspirada na cela Braille, cada caractere é formado por 6 pontos (em relevo ou liso), exceto a configuração em que todos os 6 pontos estão lisos (espaço em branco). Quantos símbolos distintos essa placa pode representar?",
+          alternativas: ["12", "36", "62", "63", "64"],
+          correta: 3,
+          resolucao: "Cada ponto tem 2 estados, gerando 2⁶ = 64 configurações. Retirando a configuração totalmente lisa (espaço em branco), restam 64 − 1 = 63 símbolos."
+        },
+        {
+          tema: "Princípio Multiplicativo sem Repetição",
+          enunciado: "Um mostrador de latão exibe apenas os algarismos ímpares: 1, 3, 5, 7 e 9. Para destravar a válvula de pressão, deve-se digitar um código de 3 algarismos distintos escolhidos entre esses cinco dígitos. Quantos códigos válidos existem?",
+          alternativas: ["15", "60", "120", "125", "243"],
+          correta: 1,
+          resolucao: "Como os algarismos devem ser distintos, temos 5 opções para o 1º dígito, 4 para o 2º e 3 para o 3º: 5 × 4 × 3 = 60 códigos."
+        },
+        {
+          tema: "Contagem Alfanumérica",
+          enunciado: "Cada gaveta de manuscritos recebe uma etiqueta composta por 2 letras seguidas de 2 algarismos. O alfabeto arquivístico possui 25 letras e os algarismos vão de 0 a 9, com repetição permitida. Quantas gavetas diferentes podem ser catalogadas?",
+          alternativas: ["500", "6.250", "54.000", "62.500", "67.600"],
+          correta: 3,
+          resolucao: "Com repetição permitida: 25 × 25 escolhas para as letras e 10 × 10 para os algarismos. Total: 625 × 100 = 62.500 etiquetas."
+        },
+        {
+          tema: "Princípio Multiplicativo com Adjacência",
+          enunciado: "O estandarte da entrada é dividido em 3 faixas verticais. O artesão dispõe de 4 cores de tinta e deseja pintá-lo de modo que faixas vizinhas não tenham a mesma cor (a 1ª e a 3ª faixa podem ter a mesma cor). De quantas maneiras diferentes o estandarte pode ser pintado?",
+          alternativas: ["12", "24", "36", "48", "64"],
+          correta: 2,
+          resolucao: "A 1ª faixa tem 4 opções; a 2ª não pode repetir a 1ª (3 opções); a 3ª só não pode repetir a 2ª (3 opções). Total: 4 × 3 × 3 = 36 maneiras."
+        },
+        {
+          tema: "Eventos Independentes",
+          enunciado: "Para acionar uma comporta, o jogador lança 1 moeda antiga (cara ou coroa) e 2 dados cúbicos comuns (1 a 6), registrando a sequência ordenada (moeda, dado 1, dado 2). Quantos resultados distintos esse experimento pode produzir?",
+          alternativas: ["14", "36", "60", "72", "144"],
+          correta: 3,
+          resolucao: "Multiplicando as possibilidades de cada lançamento: 2 (moeda) × 6 (dado 1) × 6 (dado 2) = 72 resultados distintos."
+        },
+        {
+          tema: "Contagem com Restrição Simples",
+          enunciado: "O último selo da Câmara da Ampulheta exige um número par de 3 algarismos distintos formado apenas pelos dígitos 2, 3, 4, 5 e 6. Quantos códigos pares atendem a essa regra?",
+          alternativas: ["18", "24", "36", "60", "75"],
+          correta: 2,
+          resolucao: "Começamos pela restrição (unidade par): 3 opções (2, 4 ou 6). Sem repetição, sobram 4 opções para a centena e 3 para a dezena: 4 × 3 × 3 = 36 códigos."
+        }
+      ],
+      fase2: [
+        {
+          tema: "Permutação com Repetição",
+          enunciado: "Na entrada da Galeria dos Pêndulos, um cilindro de latão exibe as letras da palavra BABEL. Para calibrar a primeira engrenagem, o sistema exige saber quantos anagramas distintos (com ou sem sentido) podem ser formados com todas as letras dessa palavra.",
+          alternativas: ["20", "24", "60", "120", "240"],
+          correta: 2,
+          resolucao: "A palavra BABEL possui 5 letras, com a letra B repetida 2 vezes: P₅⁽²⁾ = 5! / 2! = 120 / 2 = 60 anagramas."
+        },
+        {
+          tema: "Permutação Simples",
+          enunciado: "Em uma estante da galeria há 5 tomos raros (sobre Astronomia, Geometria, Óptica, Acústica e Álgebra) que devem ser enfileirados lado a lado. De quantas maneiras diferentes esses 5 livros podem ser ordenados na prateleira?",
+          alternativas: ["20", "25", "60", "120", "625"],
+          correta: 3,
+          resolucao: "Como os 5 livros são distintos e apenas mudamos sua ordem na fila, temos uma permutação simples: P₅ = 5! = 5 × 4 × 3 × 2 × 1 = 120 maneiras."
+        },
+        {
+          tema: "Permutação Simples",
+          enunciado: "Um mostrador alfabético de 5 anéis possui gravadas as letras da palavra TEMPO. Quantos anagramas distintos podem ser formados reorganizando todas as letras dessa palavra?",
+          alternativas: ["24", "25", "60", "120", "720"],
+          correta: 3,
+          resolucao: "A palavra TEMPO possui 5 letras todas distintas entre si. Logo, o total de anagramas é P₅ = 5! = 120."
+        },
+        {
+          tema: "Permutação Simples",
+          enunciado: "No eixo central do grande relógio está gravada, sem acento gráfico, a palavra PENDULO. Quantos anagramas distintos podem ser obtidos permutando todas as 7 letras dessa palavra?",
+          alternativas: ["720", "2.520", "5.040", "10.080", "40.320"],
+          correta: 2,
+          resolucao: "As 7 letras de PENDULO (P, E, N, D, U, L, O) são todas diferentes. Portanto: P₇ = 7! = 5.040 anagramas."
+        },
+        {
+          tema: "Permutação com Posição Fixa",
+          enunciado: "Um planetário mecânico exibe 6 esferas alinhadas em uma haste: Mercúrio, Vênus, Terra, Marte, Júpiter e Saturno. Para destravar o contrapeso, a esfera da Terra deve ficar obrigatoriamente na 3ª posição (da esquerda para a direita), enquanto as demais podem trocar de lugar livremente. De quantas maneiras o modelo pode ser montado?",
+          alternativas: ["24", "60", "120", "360", "720"],
+          correta: 2,
+          resolucao: "Como a Terra ocupa uma posição fixa (3ª), restam 5 esferas distintas para permutar livremente nas 5 posições restantes: P₅ = 5! = 120 configurações."
+        },
+        {
+          tema: "Permutação com Repetição",
+          enunciado: "Ao redor da cúpula de vidro da galeria está esculpida a palavra ESFERA. Quantos anagramas distintos podem ser formados com todas as letras dessa palavra?",
+          alternativas: ["120", "180", "360", "720", "1.440"],
+          correta: 2,
+          resolucao: "A palavra ESFERA tem 6 letras, sendo que a letra E aparece 2 vezes: P₆⁽²⁾ = 6! / 2! = 720 / 2 = 360 anagramas."
+        },
+        {
+          tema: "Permutação com Repetição de Objetos",
+          enunciado: "Para equilibrar a balança de precisão do pêndulo mestre, o relojoeiro deve enfileirar em um trilho 6 pesos de mesmo formato, sendo 3 pesos de cobre (idênticos entre si), 2 pesos de prata (idênticos entre si) e 1 peso de ouro. Quantas sequências visualmente distintas podem ser formadas?",
+          alternativas: ["12", "30", "60", "120", "720"],
+          correta: 2,
+          resolucao: "Permutação de 6 elementos com repetições de 3 e 2 itens idênticos: P₆⁽³˒²⁾ = 6! / (3! · 2!) = 720 / (6 × 2) = 720 / 12 = 60 sequências."
+        },
+        {
+          tema: "Permutação com Restrição Simples",
+          enunciado: "Uma fechadura alfabética aceita anagramas da palavra CIFRA, mas exige que a sequência comece obrigatoriamente por uma vogal (I ou A). Quantos anagramas válidos atendem a essa regra?",
+          alternativas: ["24", "48", "60", "96", "120"],
+          correta: 1,
+          resolucao: "Para a 1ª posição há 2 escolhas (I ou A). Fixada a vogal inicial, as 4 letras restantes permutam livremente: 2 × 4! = 2 × 24 = 48 anagramas."
+        },
+        {
+          tema: "Permutação com Múltiplas Repetições",
+          enunciado: "No pêndulo maior da galeria está gravada a palavra INFINITO, símbolo da biblioteca eterna de Borges. Quantos anagramas distintos podem ser formados com todas as 8 letras dessa palavra?",
+          alternativas: ["1.680", "3.360", "6.720", "20.160", "40.320"],
+          correta: 1,
+          resolucao: "Em INFINITO (8 letras), I aparece 3 vezes e N aparece 2 vezes: P₈⁽³˒²⁾ = 8! / (3! · 2!) = 40.320 / 12 = 3.360 anagramas."
+        },
+        {
+          tema: "Permutação em Bloco",
+          enunciado: "Entre 5 pergaminhos diferentes que devem ser expostos em linha reta numa vitrine, dois deles — o Tratado do Tempo e o Mapa do Labirinto — precisam ficar sempre juntos (lado a lado, em qualquer ordem entre si) para que suas runas se alinhem. De quantas maneiras distintas os 5 pergaminhos podem ser organizados?",
+          alternativas: ["24", "48", "60", "96", "120"],
+          correta: 1,
+          resolucao: "Agrupando os 2 pergaminhos inseparáveis em 1 bloco, permutamos 4 elementos (4! = 24). Dentro do bloco, os 2 pergaminhos trocam de lugar de 2! = 2 formas: 24 × 2 = 48 maneiras."
+        }
+      ],
+      fase3: [
+        {
+          tema: "Arranjo Simples (Cargos Distintos)",
+          enunciado: "Para reativar o mecanismo central do Salão das Engrenagens, os 8 Mestres Arquivistas da guilda precisam formar uma comissão diretiva ocupando 3 cargos distintos: Guardião do Tempo, Mestre das Lentes e Escriba das Cifras. Sabendo que cada mestre pode ocupar no máximo um cargo, de quantas maneiras diferentes essa diretoria pode ser formada?",
+          alternativas: ["56", "168", "336", "512", "40.320"],
+          correta: 2,
+          resolucao: "Como os cargos são distintos, a ordem de escolha importa: A₈,₃ = 8 × 7 × 6 = 336 diretorias possíveis."
+        },
+        {
+          tema: "Arranjo Simples (Sequências Ordenadas)",
+          enunciado: "Um carrilhão mecânico da câmara possui 7 sinos afinados nas sete notas musicais naturais (Dó, Ré, Mi, Fá, Sol, Lá, Si). A fechadura acústica só abre quando é executada uma melodia de 4 notas distintas em ordem sequencial. Quantas sequências melódicas diferentes podem ser tocadas?",
+          alternativas: ["35", "210", "840", "2.401", "5.040"],
+          correta: 2,
+          resolucao: "A ordem das notas define melodias diferentes e não há repetição: A₇,₄ = 7 × 6 × 5 × 4 = 840 sequências."
+        },
+        {
+          tema: "Arranjo com Restrição (Zero à Esquerda)",
+          enunciado: "Um cofre auxiliar exige um número inteiro de 4 algarismos distintos formado com os dígitos de 0 a 9 (o primeiro algarismo à esquerda não pode ser 0, para que seja um número válido de 4 dígitos). Quantos números distintos atendem a essa condição?",
+          alternativas: ["3.024", "4.536", "5.040", "6.561", "9.000"],
+          correta: 1,
+          resolucao: "Para o 1º algarismo (milhar), há 9 opções (1 a 9). Para as 3 posições seguintes, arranjamos 3 dos 9 dígitos restantes (incluindo o 0): 9 × A₉,₃ = 9 × (9 × 8 × 7) = 9 × 504 = 4.536 números."
+        },
+        {
+          tema: "Arranjo Simples (Posições Numeradas)",
+          enunciado: "Em um pedestal circular há 4 soquetes numerados (Posição I, Posição II, Posição III e Posição IV). O explorador encontrou 9 cristais astrológicos distintos e deve escolher 4 deles para encaixar, um em cada soquete numerado. Como a posição altera a refração da luz, de quantas maneiras diferentes o pedestal pode ser preenchido?",
+          alternativas: ["126", "504", "3.024", "6.561", "15.120"],
+          correta: 2,
+          resolucao: "Como os soquetes são numerados e os cristais são distintos, cada ordenação gera uma configuração diferente: A₉,₄ = 9 × 8 × 7 × 6 = 3.024 maneiras."
+        },
+        {
+          tema: "Arranjo Simples (Classificação / Pódio)",
+          enunciado: "Nos arquivos da câmara há o registro de um torneio disputado por 10 autômatos relojoeiros, no qual apenas os 3 primeiros colocados (1º, 2º e 3º lugares, sem empates) recebiam selos de ouro, prata e bronze. Quantos pódios distintos poderiam ter ocorrido nesse torneio?",
+          alternativas: ["120", "240", "720", "1.000", "5.040"],
+          correta: 2,
+          resolucao: "A classificação de 1º, 2º e 3º lugares diferencia a ordem dos escolhidos: A₁₀,₃ = 10 × 9 × 8 = 720 pódios distintos."
+        },
+        {
+          tema: "Arranjo com Restrição Final",
+          enunciado: "Os manuscritos proibidos são indexados por siglas de 3 letras distintas escolhidas entre as letras da palavra ASTROL (A, S, T, R, O, L — 6 letras distintas), com a condição de que a sigla termine obrigatoriamente por uma consoante (S, T, R ou L). Quantas siglas diferentes podem ser criadas?",
+          alternativas: ["40", "60", "80", "120", "216"],
+          correta: 2,
+          resolucao: "A 3ª letra possui 4 opções de consoante (S, T, R ou L). Para as 2 primeiras posições, arranjamos 2 letras dentre as 5 restantes: A₅,₂ × 4 = (5 × 4) × 4 = 80 siglas."
+        },
+        {
+          tema: "Arranjo Composto",
+          enunciado: "Uma tranca secundária exige um código composto por 2 vogais distintas (escolhidas entre A, E, I, O, U) seguidas de 2 algarismos distintos (escolhidos entre 1, 2, 3, 4, 5, 6). Quantos códigos diferentes podem ser digitados nessa tranca?",
+          alternativas: ["50", "150", "300", "600", "900"],
+          correta: 3,
+          resolucao: "Escolhemos ordenadamente 2 vogais entre 5 (A₅,₂ = 5 × 4 = 20) e 2 algarismos entre 6 (A₆,₂ = 6 × 5 = 30). Pelo Princípio Multiplicativo: 20 × 30 = 600 códigos."
+        },
+        {
+          tema: "Arranjo com Paridade",
+          enunciado: "Um mostrador giratório possui apenas os algarismos 1, 2, 3, 4, 5, 6 e 7. Para alinhar a engrenagem solar, deve-se formar um número ímpar de 3 algarismos distintos. Quantos números atendem a essa condição?",
+          alternativas: ["60", "84", "120", "210", "343"],
+          correta: 2,
+          resolucao: "Há 4 dígitos ímpares (1, 3, 5, 7) para a casa das unidades. Para centena e dezena, arranjamos 2 dígitos entre os 6 restantes: A₆,₂ × 4 = (6 × 5) × 4 = 120 números."
+        },
+        {
+          tema: "Arranjo em Casos Disjuntos",
+          enunciado: "Sobre uma mesa hexagonal estão gravados os algarismos 0, 2, 4, 5, 7 e 9. Quantos números naturais de 3 algarismos distintos e múltiplos de 5 podem ser formados utilizando apenas esses seis algarismos?",
+          alternativas: ["24", "32", "36", "40", "48"],
+          correta: 2,
+          resolucao: "Dividimos em dois casos: (1) Terminados em 0: A₅,₂ = 5 × 4 = 20 números. (2) Terminados em 5: a centena não pode ser 0 (4 opções) e a dezena tem 4 opções (incluindo o 0), dando 4 × 4 = 16 números. Total: 20 + 16 = 36."
+        },
+        {
+          tema: "Arranjo Simples (Distribuição Distinta)",
+          enunciado: "No corredor final da terceira câmara existem 11 cofres numerados de 1 a 11. O guardião possui 3 chaves mestras diferentes (Chave Solar, Chave Lunar e Chave Estelar) e deve guardar cada chave dentro de um cofre distinto. De quantas maneiras diferentes essas 3 chaves podem ser distribuídas nos cofres?",
+          alternativas: ["165", "330", "720", "990", "1.331"],
+          correta: 3,
+          resolucao: "Como as 3 chaves são diferentes e os 11 cofres são numerados, importar a ordem dos cofres escolhidos define um arranjo simples: A₁₁,₃ = 11 × 10 × 9 = 990 maneiras."
+        }
+      ],
+      fase4: [
+        {
+          tema: "Combinação Simples Direta",
+          enunciado: "Para acender a lamparina astral da Cúpula Celestial, o explorador precisa misturar 3 essências distintas dentro de um único frasco de cristal, escolhidas entre 8 frascos disponíveis na bancada (a ordem em que são despejadas não altera a reação). De quantas maneiras diferentes essa mistura pode ser preparada?",
+          alternativas: ["24", "56", "120", "336", "512"],
+          correta: 1,
+          resolucao: "Como a ordem das essências no frasco não importa: C₈,₃ = (8 × 7 × 6) / (3 × 2 × 1) = 336 / 6 = 56 misturas."
+        },
+        {
+          tema: "Combinação Simples (Pares)",
+          enunciado: "Um mural antigo retrata o Concílio dos 12 Sábios de Babel. Antes de selarem o cofre, cada sábio cumprimentou todos os outros uma única vez com um aperto de mão. Quantos apertos de mão ocorreram ao todo no concílio?",
+          alternativas: ["24", "66", "120", "132", "144"],
+          correta: 1,
+          resolucao: "Cada aperto de mão envolve um par não ordenado de sábios: C₁₂,₂ = (12 × 11) / 2 = 6 × 11 = 66 apertos de mão."
+        },
+        {
+          tema: "Produto de Combinações",
+          enunciado: "Para explorar o salão subterrâneo dos manuscritos, deve-se formar uma equipe sem hierarquia composta por 3 relojoeiros e 2 cartógrafos. Sabendo que a guilda dispõe de 6 relojoeiros e 5 cartógrafos, de quantas maneiras distintas essa equipe pode ser formada?",
+          alternativas: ["30", "100", "200", "600", "1.200"],
+          correta: 2,
+          resolucao: "Escolhemos os grupos independentemente e multiplicamos: C₆,₃ × C₅,₂ = 20 × 10 = 200 equipes."
+        },
+        {
+          tema: "Geometria Combinatória (Triângulos)",
+          enunciado: "No domo celeste da quarta câmara há 10 estrelas de safira incrustadas, dispostas de tal modo que nenhuma trinca de estrelas está alinhada (não há três pontos colineares). Ligando essas estrelas por feixes de luz, quantos triângulos distintos podem ser formados tendo três dessas estrelas como vértices?",
+          alternativas: ["30", "90", "120", "360", "720"],
+          correta: 2,
+          resolucao: "Como não há três pontos colineares, qualquer trio de estrelas define um triângulo: C₁₀,₃ = (10 × 9 × 8) / 6 = 120 triângulos."
+        },
+        {
+          tema: "Geometria Combinatória (Diagonais)",
+          enunciado: "O mecanismo central da quarta câmara é uma engrenagem na forma de um decágono regular (polígono convexo de 10 vértices). Para ativá-la, um feixe laser percorre todas as diagonais desse polígono (segmentos que unem dois vértices não consecutivos). Quantas diagonais possui essa engrenagem?",
+          alternativas: ["20", "35", "45", "70", "90"],
+          correta: 1,
+          resolucao: "O total de segmentos entre pares de vértices é C₁₀,₂ = 45. Descontando os 10 lados do decágono, restam 45 − 10 = 35 diagonais."
+        },
+        {
+          tema: "Combinação com Elemento Obrigatório",
+          enunciado: "De um baú contendo 9 relíquias mecânicas distintas, o explorador pode carregar exatamente 4 relíquias em sua bolsa. Contudo, a Chave de Arquimedes (uma das 9 relíquias) é indispensável e deve estar obrigatoriamente entre as 4 escolhidas. De quantas maneiras diferentes o explorador pode escolher suas 4 relíquias?",
+          alternativas: ["35", "56", "84", "126", "336"],
+          correta: 1,
+          resolucao: "Como a Chave de Arquimedes já está garantida, basta escolher outras 3 relíquias dentre as 8 restantes: C₈,₃ = (8 × 7 × 6) / 6 = 56 maneiras."
+        },
+        {
+          tema: "Combinação com Restrição ('Pelo Menos')",
+          enunciado: "Para decifrar um códice bilíngue, será formada uma junta de 4 tradutores escolhidos entre 5 especialistas em Grego e 4 especialistas em Latim. Para garantir a tradução completa, a junta precisa ter pelo menos 3 especialistas em Grego. De quantas maneiras essa junta pode ser composta?",
+          alternativas: ["20", "40", "45", "80", "126"],
+          correta: 2,
+          resolucao: "Somamos os casos disjuntos: (3 Grego e 1 Latim) = C₅,₃ × C₄,₁ = 10 × 4 = 40; (4 Grego e 0 Latim) = C₅,₄ × C₄,₀ = 5 × 1 = 5. Total: 40 + 5 = 45 maneiras."
+        },
+        {
+          tema: "Geometria Combinatória com Colinearidade",
+          enunciado: "Um dispositivo óptico possui dois espelhos paralelos: no espelho superior há 5 sensores luminosos e no espelho inferior há 4 sensores luminosos (nenhum outro trio de sensores está alinhado além dos pontos sobre cada espelho). Quantos triângulos distintos podem ser formados unindo 3 desses 9 sensores como vértices?",
+          alternativas: ["20", "60", "70", "84", "120"],
+          correta: 2,
+          resolucao: "Do total de trios entre os 9 pontos (C₉,₃ = 84), subtraímos os trios colineares no espelho superior (C₅,₃ = 10) e no inferior (C₄,₃ = 4): 84 − 10 − 4 = 70 triângulos."
+        },
+        {
+          tema: "Combinação Complementar (Incompatibilidade)",
+          enunciado: "Entre 8 arquivistas disponíveis, deseja-se formar um comitê de 4 membros sem cargos definidos. Porém, dois deles — Mestre Vesper e Mestre Orion — recusaram-se a trabalhar juntos e não podem fazer parte do mesmo comitê. Quantos comitês válidos podem ser formados?",
+          alternativas: ["15", "35", "55", "65", "70"],
+          correta: 2,
+          resolucao: "Do total de comitês (C₈,₄ = 70), subtraímos aqueles em que Vesper e Orion estão juntos (C₆,₂ = 15): 70 − 15 = 55 comitês válidos."
+        },
+        {
+          tema: "Combinação Complementar ('Pelo Menos Um')",
+          enunciado: "Uma lira mecânica possui 9 cordas: 5 cordas de bronze (notas graves) e 4 cordas de prata (notas agudas). Para abrir a comporta harmônica, deve-se soar simultaneamente um acorde de 3 cordas que contenha pelo menos uma corda de prata. Quantos acordes distintos atendem a essa exigência?",
+          alternativas: ["30", "40", "64", "74", "84"],
+          correta: 3,
+          resolucao: "Do total de acordes de 3 cordas (C₉,₃ = 84), excluímos os acordes formados apenas por cordas de bronze (C₅,₃ = 10): 84 − 10 = 74 acordes válidos."
+        }
+      ],
+      fase5: [
+        {
+          tema: "Integração: Combinação + Permutação",
+          enunciado: "Para alinhar o anel externo do Astrolábio de Babel, o explorador precisa formar uma senha de 5 símbolos distintos alinhados em ordem horizontal, composta obrigatoriamente por 3 runas solares (escolhidas entre 5 disponíveis) e 2 runas lunares (escolhidas entre 4 disponíveis). Quantas sequências válidas podem ser formadas?",
+          alternativas: ["60", "720", "3.600", "7.200", "15.120"],
+          correta: 3,
+          resolucao: "Escolhemos as runas de cada tipo (C₅,₃ = 10 e C₄,₂ = 6) e permutamos os 5 símbolos escolhidos na sequência (5! = 120): 10 × 6 × 120 = 7.200 sequências."
+        },
+        {
+          tema: "Permutação com Separação e Repetição",
+          enunciado: "Gravada no aro de ouro do núcleo está a palavra LABIRINTO (9 letras: consoantes L, B, R, N, T; vogais A, I, I, O). Para destravar o primeiro ferrolho, determine quantos anagramas distintos dessa palavra podem ser formados de modo que não haja duas vogais juntas (lado a lado).",
+          alternativas: ["2.880", "10.800", "21.600", "43.200", "181.440"],
+          correta: 2,
+          resolucao: "Permutamos as 5 consoantes distintas (5! = 120), criando 6 espaços. Escolhemos 4 espaços (C₆,₄ = 15) e permutamos as vogais A, I, I, O (4! / 2! = 12): 120 × 15 × 12 = 21.600 anagramas."
+        },
+        {
+          tema: "Permutação Circular com Restrição",
+          enunciado: "Ao redor da mesa circular do Santuário do Astrolábio há 6 assentos igualmente espaçados para os 6 Guardiões Supremos. Dois deles, Árion e Bóreas, precisam sentar-se lado a lado para operar juntos o quadrante mestre. Considerando equivalentes as disposições obtidas por rotação da mesa, de quantas maneiras distintas os 6 guardiões podem ocupar os assentos?",
+          alternativas: ["24", "48", "60", "120", "240"],
+          correta: 1,
+          resolucao: "Agrupando Árion e Bóreas em 1 bloco, permutamos circularmente 5 elementos: PC₅ = (5 − 1)! = 24. Como os dois podem trocar de lugar dentro do bloco (2!), temos 24 × 2 = 48 maneiras."
+        },
+        {
+          tema: "Combinação com Repetição (Barras e Bolas)",
+          enunciado: "Para alimentar o núcleo do Astrolábio, o jogador dispõe de 7 esferas de energia idênticas que devem ser distribuídas entre 4 acumuladores distintos (Norte, Sul, Leste e Oeste), sendo permitido deixar um ou mais acumuladores vazios (com zero esferas). De quantas maneiras diferentes essa distribuição de energia pode ser feita?",
+          alternativas: ["35", "84", "120", "210", "330"],
+          correta: 2,
+          resolucao: "Soluções inteiras não negativas de x₁ + x₂ + x₃ + x₄ = 7: pelo método das barras e bolas, CR₄,₇ = C₇₊₄₋₁, ₄₋₁ = C₁₀,₃ = (10 × 9 × 8) / 6 = 120 maneiras."
+        },
+        {
+          tema: "Combinação com Escolha de Liderança",
+          enunciado: "Entre 9 exploradores veteranos, deve-se formar uma equipe de 4 integrantes para descer ao poço do pêndulo, sendo que 1 dos 4 escolhidos será designado como Capitão da Expedição e os outros 3 atuarão como assistentes sem distinção de função entre si. De quantas maneiras diferentes essa equipe com seu capitão pode ser formada?",
+          alternativas: ["126", "252", "504", "1.512", "3.024"],
+          correta: 2,
+          resolucao: "Escolhemos primeiro o Capitão (9 opções) e depois os 3 assistentes sem ordem entre os 8 restantes (C₈,₃ = 56): 9 × 56 = 504 maneiras."
+        },
+        {
+          tema: "Caminhos Mínimos na Malha",
+          enunciado: "O piso do Santuário é uma malha retangular onde o explorador parte do canto inferior esquerdo A(0,0) e precisa chegar ao altar superior direito C(5,4), movendo-se apenas 1 unidade para a Direita (D) ou 1 unidade para Cima (C) a cada passo, mas passando obrigatoriamente pela alavanca localizada no ponto B(3,2). Quantos caminhos mínimos distintos existem de A até C passando por B?",
+          alternativas: ["16", "30", "60", "120", "126"],
+          correta: 2,
+          resolucao: "De A(0,0) a B(3,2): P₅⁽³˒²⁾ = 5! / (3! · 2!) = 10 caminhos. De B(3,2) a C(5,4): P₄⁽²˒²⁾ = 4! / (2! · 2!) = 6 caminhos. Total: 10 × 6 = 60 caminhos."
+        },
+        {
+          tema: "Partição em Grupos de Mesmo Tamanho",
+          enunciado: "Na sala de máquinas existem 6 engrenagens distintas que precisam ser acopladas em 3 pares (cada par composto por 2 engrenagens) para serem testadas simultaneamente em três bancadas idênticas. De quantas maneiras diferentes essas 6 engrenagens podem ser divididas em 3 pares?",
+          alternativas: ["15", "30", "45", "60", "90"],
+          correta: 0,
+          resolucao: "Escolhemos sucessivamente os pares (C₆,₂ × C₄,₂ × C₂,₂ = 15 × 6 × 1 = 90) e dividimos por 3! = 6 para eliminar a ordem artificial entre os 3 pares idênticos: 90 / 6 = 15 maneiras."
+        },
+        {
+          tema: "Combinação com Ordem Implícita",
+          enunciado: "Uma fechadura de precisão exige uma senha numérica de 4 algarismos escolhidos dentre os dígitos 1, 2, 3, 4, 5, 6, 7, 8 e 9, com a condição de que os algarismos da senha estejam em ordem estritamente crescente da esquerda para a direita (por exemplo: 2-4-7-9). Quantas senhas válidas existem?",
+          alternativas: ["36", "126", "256", "504", "3.024"],
+          correta: 1,
+          resolucao: "Para cada escolha de 4 algarismos distintos entre os 9 disponíveis, existe apenas 1 maneira de ordená-los em ordem crescente: C₉,₄ = (9 × 8 × 7 × 6) / 24 = 126 senhas."
+        },
+        {
+          tema: "Soluções Inteiras Positivas",
+          enunciado: "O núcleo do Cofre de Babel possui 3 prismas principais que precisam receber, ao todo, 9 feixes de luz idênticos. Para evitar falha óptica, cada prisma deve receber pelo menos 1 feixe de luz. De quantas maneiras distintas os 9 feixes podem ser distribuídos entre os 3 prismas?",
+          alternativas: ["15", "21", "28", "45", "55"],
+          correta: 2,
+          resolucao: "Garantindo 1 feixe em cada prisma, restam 6 feixes para distribuir livremente entre os 3 prismas (y₁ + y₂ + y₃ = 6, yᵢ ≥ 0): C₆₊₃₋₁, ₃₋₁ = C₈,₂ = (8 × 7) / 2 = 28 maneiras."
+        },
+        {
+          tema: "Contagem com Restrições Múltiplas (Palíndromos)",
+          enunciado: "Para abrir a porta final de escape do Cofre de Babel, o jogador deve inserir um número inteiro par de 5 algarismos que seja um palíndromo (lê-se igual da esquerda para a direita e da direita para a esquerda, na forma A B C B A, com A ≠ 0, podendo haver repetição de dígitos). Quantos números atendem simultaneamente a todas essas condições?",
+          alternativas: ["200", "360", "400", "450", "500"],
+          correta: 2,
+          resolucao: "No palíndromo A B C B A, A deve ser par e não nulo (2, 4, 6 ou 8 → 4 opções), enquanto B e C podem ser qualquer dígito de 0 a 9 (10 opções cada): 4 × 10 × 10 = 400 números."
+        }
+      ]
+    };
+
+    /* ==========================================================================
+       2. METADADOS DAS 5 CÂMARAS DO COFRE (1 + 2 + 2 + 3 + 4 = 12 ACERTOS)
+       ========================================================================== */
+    const FASES_CONFIG = {
+      1: {
+        romano: "I",
+        titulo: "Câmara da Ampulheta",
+        nivel: "Fácil",
+        acertosNecessarios: 1,
+        conteudo: "Princípio Fundamental da Contagem",
+        lore: "Engrenagens de latão bloqueiam a primeira comporta. Multiplique as possibilidades de cada etapa independente pelo Princípio Fundamental da Contagem para alinhar o primeiro anel.",
+        transicao: "O Anel Exterior de latão gira em harmonia e brilha em esmeralda, liberando a passagem para a Galeria dos Pêndulos."
+      },
+      2: {
+        romano: "II",
+        titulo: "Galeria dos Pêndulos",
+        nivel: "Básico",
+        acertosNecessarios: 2,
+        conteudo: "Permutação Simples e com Repetição",
+        lore: "Inscrições anagramáticas giram sobre eixos concêntricos. Ordene letras, tomos e esferas planetárias sem colapsar os pêndulos.",
+        transicao: "As cifras anagramáticas se encaixam em esmeralda! O corredor central revela o Salão das Engrenagens."
+      },
+      3: {
+        romano: "III",
+        titulo: "Salão das Engrenagens",
+        nivel: "Intermediário",
+        acertosNecessarios: 2,
+        conteudo: "Arranjo Simples",
+        lore: "Pedestais hierárquicos e mostradores ordenados exigem precisão absoluta. Aqui, a ordem de cada escolha altera o fluxo magnético.",
+        transicao: "Os rotores sincronizam em uma luz esmeralda pura. Acima de você, o domo da Cúpula Celestial se ilumina."
+      },
+      4: {
+        romano: "IV",
+        titulo: "Cúpula Celestial",
+        nivel: "Avançado",
+        acertosNecessarios: 3,
+        conteudo: "Combinação Simples",
+        lore: "No domo estelar, apenas os subconjuntos importam. Selecione comitês, acordes e triângulos celestes sem diferenciar a ordem.",
+        transicao: "As constelações projetam um feixe esmeralda direto no coração da sala: o Santuário do Astrolábio."
+      },
+      5: {
+        romano: "V",
+        titulo: "Santuário do Astrolábio",
+        nivel: "Difícil",
+        acertosNecessarios: 4,
+        conteudo: "Integração de Conceitos e Restrições Avançadas",
+        lore: "O mecanismo central integra permutações, combinações e restrições severas. Decifre os 4 selos finais para abrir as portas de Babel!",
+        transicao: "Todos os cinco anéis do Astrolábio de Babel atingiram a ressonância perfeita em esmeralda!"
+      }
+    };
+
+    /* ==========================================================================
+       3. MOTOR SONORO PROCEDURAL (WEB AUDIO API — PROTEGIDO CONTRA AUTOPLAY MOBILE)
+       ========================================================================== */
+    const SoundEngine = {
+      ctx: null,
+      muted: false,
+      musicPlaying: false,
+      musicInterval: null,
+      tickInterval: null,
+      tickToggle: false,
+      droneNodes: null,
+
+      init() {
+        try {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              this.ctx = new AudioCtx();
+            }
+          }
+          if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume().catch(() => {});
+          }
+        } catch (e) {}
+      },
+
+      updateSoundLabels() {
+        const hudIcon = document.getElementById("icon-sfx");
+        if (hudIcon) hudIcon.textContent = this.muted ? "🔇" : "🔊";
+
+        const startLabel = document.getElementById("start-sound-label");
+        if (startLabel) startLabel.textContent = this.muted ? "🔇 Som Mudo" : "🔊 Som Ativo";
+      },
+
+      toggleMute() {
+        this.init();
+        this.muted = !this.muted;
+        this.updateSoundLabels();
+        if (this.muted && this.musicPlaying) {
+          this.stopMusic();
+        }
+      },
+
+      toggleMusic() {
+        this.init();
+        if (this.musicPlaying) {
+          this.stopMusic();
+        } else {
+          if (this.muted) {
+            this.muted = false;
+            this.updateSoundLabels();
+          }
+          this.startMusic();
+        }
+      },
+
+      startMusic() {
+        if (this.musicPlaying || this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        try {
+          this.musicPlaying = true;
+          const icon = document.getElementById("icon-music");
+          if (icon) icon.textContent = "🎶";
+
+          const now = this.ctx.currentTime;
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const filter = this.ctx.createBiquadFilter();
+          const gain = this.ctx.createGain();
+
+          osc1.type = "sine";
+          osc1.frequency.setValueAtTime(73.42, now);
+          osc2.type = "triangle";
+          osc2.frequency.setValueAtTime(110.0, now);
+
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(250, now);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.exponentialRampToValueAtTime(0.04, now + 2.0);
+
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc1.start();
+          osc2.start();
+          this.droneNodes = { osc1, osc2, gain };
+
+          const notes = [587.33, 659.25, 739.99, 880.0, 1174.66];
+          this.musicInterval = setInterval(() => {
+            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+            const freq = notes[Math.floor(Math.random() * notes.length)];
+            this.playTone(freq, "sine", 1.8, 0.024);
+          }, 3400);
+
+          this.tickInterval = setInterval(() => {
+            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+            this.tickToggle = !this.tickToggle;
+            this.playTone(this.tickToggle ? 1520 : 1220, "triangle", 0.022, 0.015);
+          }, 1000);
+        } catch (e) {}
+      },
+
+      stopMusic() {
+        this.musicPlaying = false;
+        const icon = document.getElementById("icon-music");
+        if (icon) icon.textContent = "🎵";
+        if (this.musicInterval) {
+          clearInterval(this.musicInterval);
+          this.musicInterval = null;
+        }
+        if (this.tickInterval) {
+          clearInterval(this.tickInterval);
+          this.tickInterval = null;
+        }
+        if (this.droneNodes && this.ctx) {
+          try {
+            const now = this.ctx.currentTime;
+            this.droneNodes.gain.gain.setTargetAtTime(0.0001, now, 0.3);
+            setTimeout(() => {
+              try {
+                this.droneNodes?.osc1?.stop();
+                this.droneNodes?.osc2?.stop();
+              } catch (e) {}
+              this.droneNodes = null;
+            }, 600);
+          } catch (e) {}
+        }
+      },
+
+      playTone(freq, type = "sine", duration = 0.25, volume = 0.08, delay = 0) {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx || this.ctx.state !== "running") return;
+          const now = this.ctx.currentTime + delay;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + duration + 0.02);
+        } catch (e) {}
+      },
+
+      playClick() {
+        this.playTone(940, "triangle", 0.045, 0.05);
+      },
+
+      playCorrect() {
+        this.playTone(293.66, "triangle", 0.65, 0.08, 0.0);
+        this.playTone(369.99, "sine", 0.75, 0.08, 0.07);
+        this.playTone(440.00, "sine", 0.85, 0.09, 0.14);
+        this.playTone(587.33, "triangle", 1.0, 0.09, 0.21);
+      },
+
+      playPhaseUnlock() {
+        const chord = [293.66, 440.0, 587.33, 739.99, 880.0];
+        chord.forEach((f, idx) => {
+          this.playTone(f, "sine", 1.1, 0.075, idx * 0.09);
+        });
+      },
+
+      playWrong() {
+        this.playTone(130.81, "sawtooth", 0.45, 0.08, 0.0);
+        this.playTone(123.47, "sawtooth", 0.5, 0.08, 0.04);
+        this.playTone(2400, "square", 0.06, 0.03, 0.02);
+      },
+
+      playVictory() {
+        const arp = [293.66, 369.99, 440.0, 587.33, 739.99, 880.0, 1174.66];
+        arp.forEach((f, i) => {
+          this.playTone(f, "triangle", 1.15, 0.09, i * 0.11);
+        });
+      },
+
+      playDefeat() {
+        const notes = [293.66, 261.63, 220.0, 146.83];
+        notes.forEach((f, i) => {
+          this.playTone(f, "sawtooth", 0.6, 0.06, i * 0.22);
+        });
+      },
+
+      /* Cliques mecânicos seguros durante o Ato I da abertura 3D */
+      playSafeIntroGear(step = 0) {
+        try {
+          if (this.muted || !this.ctx || this.ctx.state !== "running") return;
+          const baseFreq = 340 + step * 75;
+          this.playTone(baseFreq, "triangle", 0.11, 0.045, 0);
+          this.playTone(baseFreq * 1.5, "sine", 0.16, 0.035, 0.03);
+        } catch (e) {}
+      },
+
+      /* Acorde harmônico + varredura grave durante o Dolly-Zoom Plunge (Ato III) */
+      playSafeIntroPlunge() {
+        try {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          const triggerChord = () => {
+            const notes = [146.83, 220.0, 293.66, 369.99, 440.0, 587.33, 880.0];
+            notes.forEach((f, idx) => {
+              this.playTone(f, "triangle", 1.4, 0.06, idx * 0.065);
+            });
+          };
+          if (this.ctx.state === "running") {
+            triggerChord();
+          } else if (this.ctx.state === "suspended") {
+            this.ctx.resume().then(triggerChord).catch(() => {});
+          }
+        } catch (e) {}
+      }
+    };
+
+    /* ==========================================================================
+       4. CENA 3D WEBGL (THREE.JS r128) — "O DESPERTAR DO COFRE DE BABEL"
+          - Esfera Armilar Astronômica 3D com 5 anéis metálicos concêntricos e
+            12 nós de trava (1, 2, 2, 3, 4)
+          - Núcleo celestial dourado com halo volumétrico
+          - 360 partículas de poeira dourada/ciano + 7 glifos combinatórios 3D
+          - Paralaxe interativa de câmera via mouse/touch
+          - Coreografia em 3 Atos (Ato II pausado para leitura, Ato III Dolly-Zoom)
+       ========================================================================== */
+    const Intro3DController = {
+      active: false,
+      inAct3: false,
+      readyToOpen: false,
+      webglReady: false,
+
+      scene: null,
+      camera: null,
+      renderer: null,
+      armillaryGroup: null,
+      ringGroups: [],
+      coreGroup: null,
+      coreLight: null,
+      coreMat: null,
+      coreHaloSprite: null,
+      dustPoints: null,
+      glyphSprites: [],
+
+      rafId: null,
+      timers: [],
+      startTime: 0,
+      plungeStartTime: 0,
+      lastSkipTimestamp: 0,
+
+      // Paralaxe interativa da câmera
+      targetYaw: 0,
+      targetPitch: 0,
+      currentYaw: 0,
+      currentPitch: 0,
+
+      /* Cria textura procedural de brilho radial suave (sem URL externa) */
+      createGlowTexture(innerColor, midColor, size = 128) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        const half = size / 2;
+        const grad = ctx.createRadialGradient(half, half, 0, half, half, half);
+        grad.addColorStop(0.0, innerColor);
+        grad.addColorStop(0.38, midColor);
+        grad.addColorStop(1.0, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.needsUpdate = true;
+        return tex;
+      },
+
+      /* Cria textura procedural para os sprites 3D dos glifos combinatórios */
+      createGlyphTexture(label, accentHex) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 128;
+        const ctx = canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, 256, 128);
+
+        // Retículo circular sutil atrás do símbolo
+        ctx.save();
+        ctx.strokeStyle = accentHex;
+        ctx.globalAlpha = 0.32;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(128, 64, 44, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Sombra luminosa e texto
+        ctx.font = "700 44px 'JetBrains Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.shadowColor = accentHex;
+        ctx.shadowBlur = 18;
+        ctx.fillStyle = "#f5efe6";
+        ctx.fillText(label, 128, 66);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.needsUpdate = true;
+        return tex;
+      },
+
+      initScene() {
+        if (this.webglReady) return true;
+        const canvas = document.getElementById("intro-3d-canvas");
+        if (!canvas || typeof THREE === "undefined") return false;
+
+        try {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+
+          this.scene = new THREE.Scene();
+          this.scene.background = new THREE.Color(0x07090e);
+          this.scene.fog = new THREE.FogExp2(0x07090e, 0.032);
+
+          const fov = width < 640 ? 54 : 44;
+          this.camera = new THREE.PerspectiveCamera(fov, width / height, 0.1, 100);
+          this.camera.position.set(0, 1.35, 14.5);
+
+          this.renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: false,
+            powerPreference: "high-performance"
+          });
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          this.renderer.setSize(width, height, false);
+          this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          this.renderer.toneMappingExposure = 1.25;
+
+          // Iluminação Dramática de Observatório
+          const ambientLight = new THREE.AmbientLight(0x1e293b, 0.95);
+          this.scene.add(ambientLight);
+
+          this.coreLight = new THREE.PointLight(0xf3d27a, 3.2, 42);
+          this.coreLight.position.set(0, 0, 0);
+          this.scene.add(this.coreLight);
+
+          const cyanRimLight = new THREE.PointLight(0x38bdf8, 1.9, 38);
+          cyanRimLight.position.set(-9, 7, 9);
+          this.scene.add(cyanRimLight);
+
+          const dirKeyLight = new THREE.DirectionalLight(0xfde68a, 1.45);
+          dirKeyLight.position.set(8, 12, 14);
+          this.scene.add(dirKeyLight);
+
+          const dirBackLight = new THREE.DirectionalLight(0x38bdf8, 0.75);
+          dirBackLight.position.set(-10, -8, -12);
+          this.scene.add(dirBackLight);
+
+          // Grupo Principal da Esfera Armilar Astronômica (levemente elevado para dar espaço ao card do Ato II)
+          this.armillaryGroup = new THREE.Group();
+          this.armillaryGroup.position.set(0, 1.35, 0);
+          this.scene.add(this.armillaryGroup);
+
+          // 1. Núcleo Celestial Dourado
+          this.coreGroup = new THREE.Group();
+          const coreGeo = new THREE.SphereGeometry(1.08, 32, 32);
+          this.coreMat = new THREE.MeshStandardMaterial({
+            color: 0xf3d27a,
+            emissive: 0xd4af37,
+            emissiveIntensity: 1.45,
+            roughness: 0.22,
+            metalness: 0.85
+          });
+          const coreMesh = new THREE.Mesh(coreGeo, this.coreMat);
+          this.coreGroup.add(coreMesh);
+
+          const cageGeo = new THREE.IcosahedronGeometry(1.42, 1);
+          const cageMat = new THREE.MeshBasicMaterial({
+            color: 0xf3d27a,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.36
+          });
+          const cageMesh = new THREE.Mesh(cageGeo, cageMat);
+          this.coreGroup.add(cageMesh);
+
+          const coreGlowTex = this.createGlowTexture(
+            "rgba(255, 248, 220, 0.95)",
+            "rgba(243, 210, 122, 0.36)",
+            128
+          );
+          const coreHaloMat = new THREE.SpriteMaterial({
+            map: coreGlowTex,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          });
+          this.coreHaloSprite = new THREE.Sprite(coreHaloMat);
+          this.coreHaloSprite.scale.set(5.4, 5.4, 1);
+          this.coreGroup.add(this.coreHaloSprite);
+
+          this.armillaryGroup.add(this.coreGroup);
+
+          // 2. Os 5 Anéis Concêntricos Metálicos e os 12 Nós de Trava (1, 2, 2, 3, 4)
+          const ringSpecs = [
+            { radius: 5.25, tube: 0.105, nodes: 1, color: 0xd4af37, accent: 0xf3d27a, targetTiltX: 0.14, targetTiltY: -0.08 },
+            { radius: 4.40, tube: 0.100, nodes: 2, color: 0xf3d27a, accent: 0x38bdf8, targetTiltX: -0.18, targetTiltY: 0.12 },
+            { radius: 3.58, tube: 0.095, nodes: 2, color: 0xc59b27, accent: 0xf3d27a, targetTiltX: 0.12, targetTiltY: 0.15 },
+            { radius: 2.80, tube: 0.090, nodes: 3, color: 0xf3d27a, accent: 0x38bdf8, targetTiltX: -0.14, targetTiltY: -0.14 },
+            { radius: 2.08, tube: 0.085, nodes: 4, color: 0xd4af37, accent: 0x10b981, targetTiltX: 0.08, targetTiltY: 0.06 }
+          ];
+
+          const nodeGlowTex = this.createGlowTexture(
+            "rgba(255, 255, 255, 0.95)",
+            "rgba(56, 189, 248, 0.45)",
+            64
+          );
+          const amberGlowTex = this.createGlowTexture(
+            "rgba(255, 250, 220, 0.95)",
+            "rgba(243, 210, 122, 0.45)",
+            64
+          );
+
+          this.ringGroups = [];
+          ringSpecs.forEach((spec, idx) => {
+            const group = new THREE.Group();
+
+            // Torus principal chanfrado (latão / ouro antigo)
+            const torusGeo = new THREE.TorusGeometry(spec.radius, spec.tube, 16, 96);
+            const torusMat = new THREE.MeshStandardMaterial({
+              color: spec.color,
+              emissive: 0x3a2a06,
+              emissiveIntensity: 0.35,
+              metalness: 0.88,
+              roughness: 0.24
+            });
+            const torusMesh = new THREE.Mesh(torusGeo, torusMat);
+            group.add(torusMesh);
+
+            // Trilha interna fina luminosa
+            const trackGeo = new THREE.TorusGeometry(spec.radius - spec.tube * 1.45, 0.02, 8, 84);
+            const trackMat = new THREE.MeshBasicMaterial({
+              color: spec.accent,
+              transparent: true,
+              opacity: 0.55
+            });
+            const trackMesh = new THREE.Mesh(trackGeo, trackMat);
+            group.add(trackMesh);
+
+            // Marcações graduadas radiais ao longo do anel
+            const tickCount = 24;
+            const tickGeo = new THREE.BoxGeometry(0.035, 0.16, 0.05);
+            const tickMat = new THREE.MeshStandardMaterial({
+              color: 0xf3d27a,
+              metalness: 0.9,
+              roughness: 0.2
+            });
+            for (let t = 0; t < tickCount; t++) {
+              const theta = (t / tickCount) * Math.PI * 2;
+              const tick = new THREE.Mesh(tickGeo, tickMat);
+              tick.position.set(
+                Math.cos(theta) * (spec.radius + spec.tube * 0.8),
+                Math.sin(theta) * (spec.radius + spec.tube * 0.8),
+                0
+              );
+              tick.rotation.z = theta + Math.PI / 2;
+              group.add(tick);
+            }
+
+            // Nós de Trava Cristalinos (1, 2, 2, 3, 4)
+            const crystalGeo = new THREE.OctahedronGeometry(0.21, 1);
+            for (let n = 0; n < spec.nodes; n++) {
+              const angle = (n / spec.nodes) * Math.PI * 2 + Math.PI / 2;
+              const isCyan = (idx + n) % 2 === 1;
+              const crystalMat = new THREE.MeshStandardMaterial({
+                color: isCyan ? 0x7dd3fc : 0xf3d27a,
+                emissive: isCyan ? 0x38bdf8 : 0xd4af37,
+                emissiveIntensity: 1.35,
+                metalness: 0.3,
+                roughness: 0.15
+              });
+              const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+              const nx = Math.cos(angle) * spec.radius;
+              const ny = Math.sin(angle) * spec.radius;
+              crystal.position.set(nx, ny, 0);
+              group.add(crystal);
+
+              const spriteMat = new THREE.SpriteMaterial({
+                map: isCyan ? nodeGlowTex : amberGlowTex,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+              });
+              const glowSprite = new THREE.Sprite(spriteMat);
+              glowSprite.scale.set(1.15, 1.15, 1);
+              glowSprite.position.set(nx, ny, 0);
+              group.add(glowSprite);
+            }
+
+            // Guarda metadados de rotação para o Ato I, Ato II e Ato III
+            group.userData = {
+              baseRadius: spec.radius,
+              startRotX: (idx % 2 === 0 ? 1 : -1) * (1.4 + idx * 0.35),
+              startRotY: (idx % 2 === 0 ? -1 : 1) * (1.8 + idx * 0.4),
+              startRotZ: (idx % 2 === 0 ? 1 : -1) * (Math.PI * 1.6),
+              targetRotX: spec.targetTiltX,
+              targetRotY: spec.targetTiltY,
+              targetRotZ: 0,
+              locked: false,
+              lockTime: 0.35 + idx * 0.36,
+              driftSpeedZ: (idx % 2 === 0 ? 1 : -1) * (0.08 + idx * 0.025)
+            };
+
+            this.armillaryGroup.add(group);
+            this.ringGroups.push(group);
+          });
+
+          // 3. 360+ Partículas 3D de Poeira Dourada e Ciano
+          const particleCount = 360;
+          const positions = new Float32Array(particleCount * 3);
+          const colors = new Float32Array(particleCount * 3);
+          const cGold = new THREE.Color(0xf3d27a);
+          const cCyan = new THREE.Color(0x38bdf8);
+
+          for (let i = 0; i < particleCount; i++) {
+            const r = 3.2 + Math.random() * 19.0;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+
+            positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i * 3 + 2] = r * Math.cos(phi);
+
+            const col = Math.random() > 0.28 ? cGold : cCyan;
+            colors[i * 3] = col.r;
+            colors[i * 3 + 1] = col.g;
+            colors[i * 3 + 2] = col.b;
+          }
+
+          const dustGeo = new THREE.BufferGeometry();
+          dustGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+          dustGeo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+          const dustTex = this.createGlowTexture(
+            "rgba(255, 255, 255, 1)",
+            "rgba(255, 255, 255, 0.35)",
+            32
+          );
+          const dustMat = new THREE.PointsMaterial({
+            size: 0.22,
+            map: dustTex,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          });
+
+          this.dustPoints = new THREE.Points(dustGeo, dustMat);
+          this.scene.add(this.dustPoints);
+
+          // 4. Sprites 3D Orbitais de Análise Combinatória (n!, Cₙ,ₚ, Aₙ,ₚ, Σ, ∞, Pₙ, 2ⁿ)
+          const glyphDefs = [
+            { text: "n!", color: "#f3d27a", radius: 6.6, speed: 0.28, incl: 0.24, phase: 0.0 },
+            { text: "Cₙ,ₚ", color: "#38bdf8", radius: 7.3, speed: -0.24, incl: -0.32, phase: 0.9 },
+            { text: "Aₙ,ₚ", color: "#f3d27a", radius: 6.9, speed: 0.22, incl: 0.38, phase: 1.8 },
+            { text: "Σ", color: "#38bdf8", radius: 7.6, speed: -0.26, incl: 0.18, phase: 2.7 },
+            { text: "∞", color: "#f3d27a", radius: 6.4, speed: 0.30, incl: -0.22, phase: 3.6 },
+            { text: "Pₙ", color: "#38bdf8", radius: 7.1, speed: -0.21, incl: 0.30, phase: 4.5 },
+            { text: "2ⁿ", color: "#f3d27a", radius: 7.8, speed: 0.25, incl: -0.26, phase: 5.4 }
+          ];
+
+          this.glyphSprites = glyphDefs.map((g) => {
+            const tex = this.createGlyphTexture(g.text, g.color);
+            const mat = new THREE.SpriteMaterial({
+              map: tex,
+              transparent: true,
+              opacity: 0.92,
+              depthWrite: false
+            });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(2.1, 1.05, 1);
+            sprite.userData = g;
+            this.armillaryGroup.add(sprite);
+            return sprite;
+          });
+
+          // Eventos de Redimensionamento e Paralaxe Interativa (Mouse & Touch)
+          window.addEventListener("resize", () => this.onResize());
+          const overlay = document.getElementById("intro-overlay");
+          if (overlay) {
+            overlay.addEventListener("mousemove", (e) => {
+              const nx = (e.clientX / window.innerWidth) * 2 - 1;
+              const ny = (e.clientY / window.innerHeight) * 2 - 1;
+              this.targetYaw = nx * 0.42;
+              this.targetPitch = -ny * 0.26;
+            });
+
+            overlay.addEventListener(
+              "touchmove",
+              (e) => {
+                if (e.touches && e.touches.length > 0) {
+                  const t = e.touches[0];
+                  const nx = (t.clientX / window.innerWidth) * 2 - 1;
+                  const ny = (t.clientY / window.innerHeight) * 2 - 1;
+                  this.targetYaw = nx * 0.48;
+                  this.targetPitch = -ny * 0.28;
+                }
+              },
+              { passive: true }
+            );
+          }
+
+          this.webglReady = true;
+          return true;
+        } catch (err) {
+          console.warn("WebGL fallback ativado:", err);
+          this.webglReady = false;
+          const fb = document.getElementById("intro-webgl-fallback");
+          if (fb) fb.style.display = "flex";
+          return false;
+        }
+      },
+
+      onResize() {
+        if (!this.webglReady || !this.renderer || !this.camera) return;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        this.camera.fov = w < 640 ? 54 : 44;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h, false);
+      },
+
+      clearTimers() {
+        this.timers.forEach((id) => clearTimeout(id));
+        this.timers = [];
+      },
+
+      stopLoop() {
+        if (this.rafId) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+      },
+
+      play(manualReplay = false) {
+        this.clearTimers();
+        this.stopLoop();
+
+        const has3D = this.initScene();
+        this.active = true;
+        this.inAct3 = false;
+        this.readyToOpen = false;
+        this.startTime = performance.now();
+        this.targetYaw = 0;
+        this.targetPitch = 0;
+        this.currentYaw = 0;
+        this.currentPitch = 0;
+
+        if (manualReplay) {
+          SoundEngine.init();
+        }
+
+        const overlay = document.getElementById("intro-overlay");
+        const startScreen = document.getElementById("start-screen");
+        if (startScreen) {
+          startScreen.classList.remove("stagger-revealed");
+        }
+
+        overlay.style.display = "flex";
+        overlay.style.opacity = "1";
+        overlay.classList.remove("act-1", "act-2", "act-3", "plunge-flash");
+
+        // Reseta estado dos anéis 3D e câmera para o início do Ato I
+        if (has3D) {
+          this.camera.position.set(0, 1.35, 14.5);
+          this.camera.lookAt(0, 1.35, 0);
+          if (this.coreLight) this.coreLight.intensity = 3.2;
+          if (this.coreMat) this.coreMat.emissiveIntensity = 1.45;
+          if (this.coreHaloSprite) this.coreHaloSprite.scale.set(5.4, 5.4, 1);
+
+          this.ringGroups.forEach((group, idx) => {
+            group.scale.set(1, 1, 1);
+            group.userData.locked = false;
+            group.rotation.set(
+              group.userData.startRotX,
+              group.userData.startRotY,
+              group.userData.startRotZ
+            );
+          });
+        }
+
+        // ATO I (0.0s – 2.2s): Alinhamento harmônico sequencial dos 5 anéis 3D
+        overlay.classList.add("act-1");
+
+        // ATO II (a partir de 2.0s — PAUSADO PARA LEITURA, não fecha sozinho)
+        this.timers.push(
+          setTimeout(() => {
+            if (!this.active || this.inAct3) return;
+            overlay.classList.add("act-2");
+            this.readyToOpen = true;
+          }, 2000)
+        );
+
+        if (has3D) {
+          this.animateLoop();
+        }
+      },
+
+      animateLoop() {
+        if (!this.active || !this.webglReady) return;
+
+        const now = performance.now();
+        const elapsed = (now - this.startTime) / 1000;
+
+        // Pulso suave do núcleo celestial e rotação da gaiola geodésica
+        if (this.coreGroup) {
+          this.coreGroup.rotation.y = elapsed * 0.45;
+          this.coreGroup.rotation.x = Math.sin(elapsed * 0.7) * 0.25;
+        }
+
+        // Deriva lenta da nuvem de poeira dourada 3D
+        if (this.dustPoints) {
+          this.dustPoints.rotation.y = elapsed * 0.035;
+          this.dustPoints.rotation.x = Math.sin(elapsed * 0.15) * 0.08;
+        }
+
+        // Órbita 3D dos 7 glifos combinatórios ao redor da esfera armilar
+        for (const sprite of this.glyphSprites) {
+          const g = sprite.userData;
+          const a = elapsed * g.speed + g.phase;
+          const x = Math.cos(a) * g.radius;
+          const z = Math.sin(a) * g.radius;
+          const y = Math.sin(a * 1.4 + g.phase) * g.radius * g.incl;
+          sprite.position.set(x, y, z);
+        }
+
+        if (!this.inAct3) {
+          // ATO I e ATO II: Alinhamento sequencial dos 5 anéis e ressonância harmônica
+          this.ringGroups.forEach((group, idx) => {
+            const d = group.userData;
+            if (!d.locked) {
+              const t = Math.min(elapsed / d.lockTime, 1);
+              // Ease-out cúbico suave
+              const ease = 1 - Math.pow(1 - t, 3);
+              group.rotation.x = d.startRotX + (d.targetRotX - d.startRotX) * ease;
+              group.rotation.y = d.startRotY + (d.targetRotY - d.startRotY) * ease;
+              group.rotation.z = d.startRotZ + (d.targetRotZ - d.startRotZ) * ease;
+
+              if (t >= 1) {
+                d.locked = true;
+                SoundEngine.playSafeIntroGear(idx);
+                if (this.coreLight) this.coreLight.intensity = 4.6;
+              }
+            } else {
+              // Após travar no alinhamento, mantém respiração astronômica elegante
+              group.rotation.z += d.driftSpeedZ * 0.016;
+              group.rotation.x = d.targetRotX + Math.sin(elapsed * 1.1 + idx) * 0.045;
+              group.rotation.y = d.targetRotY + Math.cos(elapsed * 0.9 + idx) * 0.045;
+            }
+          });
+
+          // Atenua o brilho do pulso de travamento de volta ao padrão
+          if (this.coreLight && this.coreLight.intensity > 3.2) {
+            this.coreLight.intensity = Math.max(3.2, this.coreLight.intensity - 0.06);
+          }
+
+          // Paralaxe interativa suave da câmera
+          this.currentYaw += (this.targetYaw - this.currentYaw) * 0.06;
+          this.currentPitch += (this.targetPitch - this.currentPitch) * 0.06;
+
+          const camDist = 14.5;
+          const centerY = 1.35;
+          this.camera.position.x = Math.sin(this.currentYaw) * camDist;
+          this.camera.position.y = centerY + Math.sin(this.currentPitch) * 4.2;
+          this.camera.position.z = Math.cos(this.currentYaw) * camDist;
+          this.camera.lookAt(0, centerY, 0);
+        } else {
+          // ATO III: Dolly-Zoom Plunge exponencial pelo centro dos 5 anéis!
+          const plungeElapsed = (now - this.plungeStartTime) / 1000;
+          const duration = 1.35;
+          const p = Math.min(plungeElapsed / duration, 1);
+          // Curva exponencial acelerada
+          const expEase = p === 0 ? 0 : Math.pow(2, 10 * (p - 1));
+
+          const centerY = 1.35;
+          this.camera.position.x = this.camera.position.x * (1 - expEase * 0.25);
+          this.camera.position.y = centerY + (this.camera.position.y - centerY) * (1 - expEase * 0.25);
+          this.camera.position.z = 14.5 - expEase * 17.5; // Mergulha de z=14.5 até z=-3.0 atravessando o núcleo
+          this.camera.lookAt(0, centerY, -10);
+
+          // Os 5 anéis expandem radialmente e aceleram sua rotação
+          this.ringGroups.forEach((group, idx) => {
+            const expand = 1 + expEase * (1.2 + idx * 0.22);
+            group.scale.set(expand, expand, expand);
+            group.rotation.z += (idx % 2 === 0 ? 1 : -1) * (0.04 + expEase * 0.16);
+          });
+
+          // Núcleo celestial irradia luz dourada intensa
+          if (this.coreLight) this.coreLight.intensity = 3.2 + expEase * 12.0;
+          if (this.coreMat) this.coreMat.emissiveIntensity = 1.45 + expEase * 5.0;
+          if (this.coreHaloSprite) {
+            const s = 5.4 + expEase * 14.0;
+            this.coreHaloSprite.scale.set(s, s, 1);
+          }
+        }
+
+        this.renderer.render(this.scene, this.camera);
+        this.rafId = requestAnimationFrame(() => this.animateLoop());
+      },
+
+      triggerPlunge() {
+        if (!this.active || this.inAct3) return;
+        this.inAct3 = true;
+        this.clearTimers();
+        this.plungeStartTime = performance.now();
+
+        const overlay = document.getElementById("intro-overlay");
+        overlay.classList.add("act-3");
+        SoundEngine.playSafeIntroPlunge();
+
+        // Clarão dourado no auge do mergulho (0.78s)
+        this.timers.push(
+          setTimeout(() => {
+            if (!this.active) return;
+            overlay.classList.add("plunge-flash");
+          }, 780)
+        );
+
+        // Fade-out suave para o Menu Principal (1.28s)
+        this.timers.push(
+          setTimeout(() => {
+            if (!this.active) return;
+            overlay.style.opacity = "0";
+          }, 1150)
+        );
+
+        // Encerra o loop 3D e revela a Tela Inicial com stagger (1.65s)
+        this.timers.push(
+          setTimeout(() => {
+            this.finishAndRevealMenu();
+          }, 1650)
+        );
+      },
+
+      finishAndRevealMenu() {
+        this.clearTimers();
+        this.stopLoop();
+        this.active = false;
+        this.inAct3 = false;
+        this.readyToOpen = false;
+
+        const overlay = document.getElementById("intro-overlay");
+        if (overlay) {
+          overlay.style.display = "none";
+          overlay.style.opacity = "1";
+          overlay.classList.remove("act-1", "act-2", "act-3", "plunge-flash");
+        }
+
+        const startScreen = document.getElementById("start-screen");
+        if (startScreen) {
+          startScreen.classList.remove("stagger-revealed");
+          void startScreen.offsetWidth;
+          startScreen.classList.add("stagger-revealed");
+        }
+      }
+    };
+
+    function playIntroSequence(manualReplay = false) {
+      Intro3DController.play(manualReplay);
+    }
+
+    function openVaultDoors() {
+      if (Intro3DController.webglReady) {
+        Intro3DController.triggerPlunge();
+      } else {
+        SoundEngine.playSafeIntroPlunge();
+        Intro3DController.finishAndRevealMenu();
+      }
+    }
+
+    function skipIntroSequence(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - Intro3DController.lastSkipTimestamp < 300) return;
+      Intro3DController.lastSkipTimestamp = now;
+
+      SoundEngine.init();
+      SoundEngine.playClick();
+      Intro3DController.finishAndRevealMenu();
+    }
+
+    /* ==========================================================================
+       5. ESTADO GLOBAL DA PARTIDA E CONTROLE DE PAUSA
+       ========================================================================== */
+    const TOTAL_TIME_SECONDS = 15 * 60; // 15 minutos
+    const MAX_ERRORS = 3; // 3 Cristais de Contenção
+
+    const gameState = {
+      status: "start", // 'start' | 'playing' | 'victory' | 'defeat'
+      isPaused: false,
+      currentPhase: 1,
+      phaseCorrect: 0,
+      totalCorrect: 0,
+      totalAttempts: 0,
+      errorsCount: 0,
+      timeRemaining: TOTAL_TIME_SECONDS,
+      timerInterval: null,
+      usedQuestionIndices: { 1: new Set(), 2: new Set(), 3: new Set(), 4: new Set(), 5: new Set() },
+      currentQuestion: null,
+      answeredCurrent: false,
+      pendingPhaseAdvance: false
+    };
+
+    const pauseConfirmState = {
+      restartPending: false,
+      restartTimeout: null,
+      menuPending: false,
+      menuTimeout: null
+    };
+
+    /* ==========================================================================
+       6. RENDERIZAÇÃO DO ASTROLÁBIO INTERATIVO DE BABEL (SVG)
+       ========================================================================== */
+    function initAstrolabeTicks() {
+      const group = document.getElementById("astrolabe-outer-ticks");
+      if (!group) return;
+      group.innerHTML = "";
+      for (let i = 0; i < 72; i++) {
+        const angle = (i * 5 * Math.PI) / 180;
+        const isMajor = i % 6 === 0;
+        const r1 = isMajor ? 196 : 201;
+        const r2 = 208;
+        const x1 = 220 + r1 * Math.cos(angle);
+        const y1 = 220 + r1 * Math.sin(angle);
+        const x2 = 220 + r2 * Math.cos(angle);
+        const y2 = 220 + r2 * Math.sin(angle);
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", x1.toFixed(1));
+        line.setAttribute("y1", y1.toFixed(1));
+        line.setAttribute("x2", x2.toFixed(1));
+        line.setAttribute("y2", y2.toFixed(1));
+        if (isMajor) {
+          line.setAttribute("stroke", "rgba(243, 210, 122, 0.7)");
+          line.setAttribute("stroke-width", "1.6");
+        }
+        group.appendChild(line);
+      }
+    }
+
+    function triggerAstrolabeCrimsonPulse() {
+      const panel = document.getElementById("astrolabe-panel");
+      const coreDot = document.getElementById("astrolabe-core-dot");
+      if (panel) {
+        panel.classList.remove("astrolabe-crimson-flash");
+        void panel.offsetWidth;
+        panel.classList.add("astrolabe-crimson-flash");
+      }
+      if (coreDot) {
+        coreDot.setAttribute("fill", "#ef4444");
+      }
+      setTimeout(() => {
+        panel?.classList.remove("astrolabe-crimson-flash");
+        if (coreDot) {
+          coreDot.setAttribute("fill", gameState.status === "victory" ? "#10b981" : "#f3d27a");
+        }
+      }, 650);
+    }
+
+    function renderAstrolabe() {
+      const layer = document.getElementById("astrolabe-rings-layer");
+      if (!layer) return;
+      layer.innerHTML = "";
+
+      const ringRadii = { 1: 180, 2: 148, 3: 116, 4: 84, 5: 54 };
+
+      for (let phase = 1; phase <= 5; phase++) {
+        const cfg = FASES_CONFIG[phase];
+        const r = ringRadii[phase];
+        const isActive = phase === gameState.currentPhase && gameState.status === "playing";
+        const isCompleted =
+          phase < gameState.currentPhase ||
+          gameState.status === "victory" ||
+          (isActive && gameState.phaseCorrect >= cfg.acertosNecessarios);
+
+        const ringGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        ringGroup.setAttribute("class", "astrolabe-ring");
+
+        const rotationDeg = isCompleted
+          ? 0
+          : isActive
+          ? (gameState.phaseCorrect + 1) * 22
+          : -phase * 15;
+        ringGroup.style.transform = `rotate(${rotationDeg}deg)`;
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", "220");
+        circle.setAttribute("cy", "220");
+        circle.setAttribute("r", r);
+        circle.setAttribute("fill", "none");
+
+        if (isCompleted) {
+          circle.setAttribute("stroke", "#10b981");
+          circle.setAttribute("stroke-width", "3");
+        } else if (isActive) {
+          circle.setAttribute("stroke", "#f3d27a");
+          circle.setAttribute("stroke-width", "2.6");
+          circle.setAttribute("stroke-dasharray", "12 4");
+        } else {
+          circle.setAttribute("stroke", "rgba(212, 175, 55, 0.28)");
+          circle.setAttribute("stroke-width", "1.6");
+        }
+        ringGroup.appendChild(circle);
+
+        const totalNodes = cfg.acertosNecessarios;
+        const litNodes = isCompleted
+          ? totalNodes
+          : isActive
+          ? gameState.phaseCorrect
+          : 0;
+
+        for (let n = 0; n < totalNodes; n++) {
+          const nodeAngle = (-90 + (360 / totalNodes) * n) * (Math.PI / 180);
+          const nx = 220 + r * Math.cos(nodeAngle);
+          const ny = 220 + r * Math.sin(nodeAngle);
+          const isLit = n < litNodes;
+
+          if (isLit) {
+            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            beam.setAttribute("x1", nx.toFixed(1));
+            beam.setAttribute("y1", ny.toFixed(1));
+            beam.setAttribute("x2", "220");
+            beam.setAttribute("y2", "220");
+            beam.setAttribute(
+              "stroke",
+              isCompleted ? "rgba(16, 185, 129, 0.50)" : "rgba(56, 189, 248, 0.55)"
+            );
+            beam.setAttribute("stroke-width", "1.6");
+            ringGroup.appendChild(beam);
+          }
+
+          const node = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          node.setAttribute("cx", nx.toFixed(1));
+          node.setAttribute("cy", ny.toFixed(1));
+          node.setAttribute("r", isActive ? "7" : "5.8");
+          node.setAttribute(
+            "fill",
+            isLit ? (isCompleted ? "#10b981" : "#38bdf8") : "#0b0e14"
+          );
+          node.setAttribute(
+            "stroke",
+            isLit ? "#ffffff" : isActive ? "#f3d27a" : "rgba(212, 175, 55, 0.52)"
+          );
+          node.setAttribute("stroke-width", "1.8");
+          ringGroup.appendChild(node);
+        }
+
+        layer.appendChild(ringGroup);
+      }
+
+      const pill = document.getElementById("astrolabe-status-pill");
+      if (pill) {
+        const cfg = FASES_CONFIG[gameState.currentPhase];
+        const done = gameState.phaseCorrect >= cfg.acertosNecessarios || gameState.status === "victory";
+        if (done) {
+          pill.className = "font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-emeraldseal/15 text-emeraldseal border border-emeraldseal/40";
+          pill.textContent = `Anel ${cfg.romano} Alinhado`;
+        } else {
+          pill.className = "font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-cyanbio/15 text-cyanbio border border-cyanbio/35";
+          pill.textContent = `Anel ${cfg.romano} Ativo (${gameState.phaseCorrect}/${cfg.acertosNecessarios})`;
+        }
+      }
+    }
+
+    /* ==========================================================================
+       7. ATUALIZAÇÃO DA HUD E CRONÔMETRO
+       ========================================================================== */
+    function updateHUD() {
+      const cfg = FASES_CONFIG[gameState.currentPhase];
+
+      document.getElementById("hud-chamber-subtitle").textContent =
+        `Câmara ${cfg.romano} • ${cfg.titulo}`;
+      document.getElementById("hud-diff-pill").textContent = cfg.nivel;
+
+      document.getElementById("hud-total-correct").textContent = gameState.totalCorrect;
+      const globalSegs = document.getElementById("hud-global-segments");
+      globalSegs.innerHTML = "";
+      for (let i = 0; i < 12; i++) {
+        const lit = i < gameState.totalCorrect;
+        const seg = document.createElement("span");
+        seg.className = lit
+          ? "w-1.5 sm:w-2 h-3 rounded-sm bg-gradient-to-t from-brass to-cyanbio transition-all duration-300"
+          : "w-1.5 sm:w-2 h-3 rounded-sm bg-obsidian border border-brass/25 transition-all duration-300";
+        globalSegs.appendChild(seg);
+      }
+
+      const crystalsContainer = document.getElementById("hud-crystals");
+      crystalsContainer.innerHTML = "";
+      const remainingCrystals = MAX_ERRORS - gameState.errorsCount;
+
+      for (let i = 0; i < MAX_ERRORS; i++) {
+        const intact = i < remainingCrystals;
+        const span = document.createElement("span");
+        span.className = intact
+          ? "transition-all text-xs sm:text-sm"
+          : "opacity-30 grayscale transition-all text-xs sm:text-sm";
+        span.textContent = "💎";
+        crystalsContainer.appendChild(span);
+      }
+
+      document.getElementById("phase-progress-text").textContent =
+        `${gameState.phaseCorrect} / ${cfg.acertosNecessarios}`;
+
+      const nodesBar = document.getElementById("phase-nodes-bar");
+      nodesBar.innerHTML = "";
+      for (let i = 0; i < cfg.acertosNecessarios; i++) {
+        const done = i < gameState.phaseCorrect;
+        const seg = document.createElement("div");
+        seg.className = done
+          ? "h-2.5 flex-1 rounded-full bg-gradient-to-r from-emeraldseal to-cyanbio transition-all duration-300"
+          : "h-2.5 flex-1 rounded-full bg-obsidian border border-brass/25 transition-all duration-300";
+        nodesBar.appendChild(seg);
+      }
+
+      document.getElementById("chamber-lore-title").textContent =
+        `Câmara ${cfg.romano}: ${cfg.titulo}`;
+      document.getElementById("chamber-lore-desc").textContent = cfg.lore;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function startTimer() {
+      stopTimer();
+      updateTimerDisplay();
+      gameState.timerInterval = setInterval(() => {
+        if (gameState.status !== "playing" || gameState.isPaused) return;
+        gameState.timeRemaining--;
+        updateTimerDisplay();
+
+        if (gameState.timeRemaining <= 0) {
+          gameState.timeRemaining = 0;
+          triggerDefeat("time");
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById("hud-timer");
+      const box = document.getElementById("hud-timer-box");
+      el.textContent = formatTime(gameState.timeRemaining);
+
+      if (gameState.timeRemaining <= 60) {
+        el.className = "font-mono text-xs sm:text-sm font-bold text-crimsonalert animate-pulse tracking-wider";
+        box.classList.remove("border-brass/35", "border-amber-400/60");
+        box.classList.add("border-crimsonalert/70");
+      } else if (gameState.timeRemaining <= 180) {
+        el.className = "font-mono text-xs sm:text-sm font-bold text-amber-400 tracking-wider";
+        box.classList.remove("border-brass/35", "border-crimsonalert/70");
+        box.classList.add("border-amber-400/60");
+      } else {
+        el.className = "font-mono text-xs sm:text-sm font-bold text-brasslight tracking-wider";
+        box.classList.remove("border-amber-400/60", "border-crimsonalert/70");
+        box.classList.add("border-brass/35");
+      }
+    }
+
+    /* ==========================================================================
+       8. SORTEIO SEM REPETIÇÃO E LÓGICA DE RESPOSTAS
+       ========================================================================== */
+    function drawNextQuestion(phase) {
+      const pool = BANCO_DE_QUESTOES[`fase${phase}`];
+      const usedSet = gameState.usedQuestionIndices[phase];
+
+      if (usedSet.size >= pool.length) {
+        usedSet.clear();
+      }
+
+      const availableIndices = [];
+      for (let i = 0; i < pool.length; i++) {
+        if (!usedSet.has(i)) availableIndices.push(i);
+      }
+
+      const chosenIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      usedSet.add(chosenIdx);
+      return pool[chosenIdx];
+    }
+
+    function loadQuestion() {
+      const phase = gameState.currentPhase;
+      const cfg = FASES_CONFIG[phase];
+      const question = drawNextQuestion(phase);
+
+      gameState.currentQuestion = question;
+      gameState.answeredCurrent = false;
+      gameState.pendingPhaseAdvance = false;
+
+      document.getElementById("q-phase-badge").textContent = `CÂMARA ${cfg.romano} DE V`;
+      document.getElementById("q-difficulty-badge").textContent = `Nível: ${cfg.nivel}`;
+      document.getElementById("q-topic-badge").textContent = question.tema || cfg.conteudo;
+      document.getElementById("q-counter-label").textContent =
+        `Enigma #${gameState.totalAttempts + 1} • ${cfg.titulo}`;
+
+      document.getElementById("q-stem").textContent = question.enunciado;
+
+      const drawer = document.getElementById("resolution-drawer");
+      drawer.classList.add("hidden");
+
+      const optionsContainer = document.getElementById("q-options");
+      optionsContainer.innerHTML = "";
+      const letters = ["A", "B", "C", "D", "E"];
+
+      question.alternativas.forEach((altText, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.dataset.index = idx;
+        btn.className =
+          "option-card w-full text-left p-3 sm:p-4 rounded-2xl flex items-center gap-3 cursor-pointer group";
+        btn.onclick = () => selectAnswer(idx);
+
+        btn.innerHTML = `
+          <span class="w-8 h-8 rounded-xl bg-obsidian border border-brass/40 group-hover:border-brasslight flex items-center justify-center font-mono text-xs sm:text-sm font-bold text-brasslight shrink-0 transition-colors">
+            ${letters[idx]}
+          </span>
+          <span class="text-sm sm:text-base text-parchment/95 font-medium leading-snug">
+            ${altText}
+          </span>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      updateHUD();
+      renderAstrolabe();
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (gameState.answeredCurrent || gameState.status !== "playing" || gameState.isPaused) return;
+      gameState.answeredCurrent = true;
+      gameState.totalAttempts++;
+
+      const question = gameState.currentQuestion;
+      const isCorrect = selectedIndex === question.correta;
+      const buttons = document.querySelectorAll("#q-options button");
+
+      buttons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === question.correta) {
+          btn.classList.add("option-correct");
+        } else if (idx === selectedIndex && !isCorrect) {
+          btn.classList.add("option-wrong");
+        } else {
+          btn.classList.add("option-dimmed");
+        }
+      });
+
+      const drawer = document.getElementById("resolution-drawer");
+      const iconBadge = document.getElementById("res-icon-badge");
+      const statusTitle = document.getElementById("res-status-title");
+      const statusSub = document.getElementById("res-status-subtitle");
+      const nextBtnLabel = document.getElementById("btn-next-step-label");
+
+      document.getElementById("res-explanation").textContent = question.resolucao;
+      drawer.classList.remove("hidden", "border-emeraldseal/55", "bg-emeraldseal/10", "border-crimsonalert/55", "bg-crimsonalert/10");
+
+      if (isCorrect) {
+        gameState.phaseCorrect++;
+        gameState.totalCorrect++;
+        SoundEngine.playCorrect();
+
+        const cfg = FASES_CONFIG[gameState.currentPhase];
+        const completedPhase = gameState.phaseCorrect >= cfg.acertosNecessarios;
+        gameState.pendingPhaseAdvance = completedPhase;
+
+        drawer.classList.add("border-emeraldseal/55", "bg-emeraldseal/10");
+        iconBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 font-bold bg-emeraldseal/25 text-emeraldseal border border-emeraldseal/50";
+        iconBadge.textContent = "✓";
+
+        if (gameState.totalCorrect >= 12) {
+          statusTitle.className = "font-display text-base sm:text-lg font-bold tracking-wide text-brasslight";
+          statusTitle.textContent = "Selo Final Destravado!";
+          statusSub.textContent = "Todos os 12 enigmas foram resolvidos. O Cofre de Babel está pronto para abrir.";
+          nextBtnLabel.textContent = "Abrir as Portas do Cofre";
+        } else if (completedPhase) {
+          statusTitle.className = "font-display text-base sm:text-lg font-bold tracking-wide text-emeraldseal";
+          statusTitle.textContent = `Câmara ${cfg.romano} Concluída!`;
+          statusSub.textContent = "O anel correspondente do Astrolábio alinhou-se e brilha em esmeralda.";
+          nextBtnLabel.textContent = "Avançar para Próxima Câmara";
+        } else {
+          statusTitle.className = "font-display text-base sm:text-lg font-bold tracking-wide text-emeraldseal";
+          statusTitle.textContent = "Engrenagem Alinhada!";
+          statusSub.textContent = `Acerto contabilizado (${gameState.phaseCorrect}/${cfg.acertosNecessarios} nesta câmara).`;
+          nextBtnLabel.textContent = "Continuar";
+        }
+
+        updateHUD();
+        renderAstrolabe();
+      } else {
+        gameState.errorsCount++;
+        SoundEngine.playWrong();
+        triggerAstrolabeCrimsonPulse();
+
+        const consoleEl = document.getElementById("puzzle-console");
+        consoleEl.classList.remove("shake-alert");
+        void consoleEl.offsetWidth;
+        consoleEl.classList.add("shake-alert");
+
+        drawer.classList.add("border-crimsonalert/55", "bg-crimsonalert/10");
+        iconBadge.className = "w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 font-bold bg-crimsonalert/25 text-crimsonalert border border-crimsonalert/50";
+        iconBadge.textContent = "✕";
+        statusTitle.className = "font-display text-base sm:text-lg font-bold tracking-wide text-crimsonalert";
+
+        const crystalsLeft = MAX_ERRORS - gameState.errorsCount;
+        if (crystalsLeft <= 0) {
+          statusTitle.textContent = "Último Cristal Estilhaçado!";
+          statusSub.textContent = "A contenção do cofre entrou em colapso crítico.";
+          nextBtnLabel.textContent = "Ver Relatório de Colapso";
+        } else {
+          statusTitle.textContent = "Falha na Calibração!";
+          statusSub.textContent = `Um Cristal de Contenção quebrou (restam ${crystalsLeft}). Seus acertos anteriores foram preservados.`;
+          nextBtnLabel.textContent = "Continuar";
+        }
+
+        updateHUD();
+      }
+
+      setTimeout(() => {
+        drawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 80);
+    }
+
+    function handleNextStep() {
+      if (gameState.isPaused) return;
+      SoundEngine.playClick();
+
+      if (gameState.errorsCount >= MAX_ERRORS) {
+        triggerDefeat("crystals");
+        return;
+      }
+
+      if (gameState.totalCorrect >= 12) {
+        triggerVictory();
+        return;
+      }
+
+      if (gameState.pendingPhaseAdvance) {
+        const prevCfg = FASES_CONFIG[gameState.currentPhase];
+        gameState.currentPhase++;
+        gameState.phaseCorrect = 0;
+        gameState.pendingPhaseAdvance = false;
+
+        SoundEngine.playPhaseUnlock();
+        showPhaseTransition(prevCfg, FASES_CONFIG[gameState.currentPhase]);
+        return;
+      }
+
+      loadQuestion();
+    }
+
+    /* ==========================================================================
+       9. MENU DE PAUSA, MERGULHO NO ASTROLÁBIO E NAVEGAÇÃO ENTRE TELAS
+       ========================================================================== */
+    function resetPauseConfirmButtons() {
+      pauseConfirmState.restartPending = false;
+      pauseConfirmState.menuPending = false;
+      if (pauseConfirmState.restartTimeout) clearTimeout(pauseConfirmState.restartTimeout);
+      if (pauseConfirmState.menuTimeout) clearTimeout(pauseConfirmState.menuTimeout);
+
+      const btnRestart = document.getElementById("btn-pause-restart");
+      const lblRestart = document.getElementById("label-pause-restart");
+      if (btnRestart && lblRestart) {
+        btnRestart.className = "btn-obsidian w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 text-brasslight border-brass/40 cursor-pointer";
+        lblRestart.textContent = "Reiniciar Partida";
+      }
+
+      const btnMenu = document.getElementById("btn-pause-menu");
+      const lblMenu = document.getElementById("label-pause-menu");
+      if (btnMenu && lblMenu) {
+        btnMenu.className = "btn-obsidian w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 text-parchment/85 border-brass/30 cursor-pointer";
+        lblMenu.textContent = "Voltar ao Menu Principal";
+      }
+    }
+
+    function openPauseModal() {
+      if (gameState.status !== "playing" || gameState.isPaused) return;
+      SoundEngine.playClick();
+
+      gameState.isPaused = true;
+      stopTimer();
+      resetPauseConfirmButtons();
+
+      const cfg = FASES_CONFIG[gameState.currentPhase];
+      document.getElementById("pause-stat-chamber").textContent = `Câmara ${cfg.romano} • ${cfg.titulo}`;
+      document.getElementById("pause-stat-seals").textContent = `${gameState.totalCorrect} / 12 Selos`;
+      document.getElementById("pause-stat-crystals").textContent = `${MAX_ERRORS - gameState.errorsCount} / ${MAX_ERRORS} Cristais`;
+      document.getElementById("pause-stat-time").textContent = formatTime(gameState.timeRemaining);
+
+      document.getElementById("game-screen").classList.add("game-screen-blurred");
+      document.getElementById("pause-modal").classList.remove("hidden");
+    }
+
+    function closePauseModal(silent = false) {
+      if (!gameState.isPaused) return;
+      if (!silent) SoundEngine.playClick();
+
+      gameState.isPaused = false;
+      resetPauseConfirmButtons();
+
+      document.getElementById("game-screen").classList.remove("game-screen-blurred");
+      document.getElementById("pause-modal").classList.add("hidden");
+
+      if (gameState.status === "playing") {
+        startTimer();
+      }
+    }
+
+    function handlePauseRestartClick() {
+      SoundEngine.playClick();
+      if (!pauseConfirmState.restartPending) {
+        pauseConfirmState.restartPending = true;
+        const btn = document.getElementById("btn-pause-restart");
+        const lbl = document.getElementById("label-pause-restart");
+        btn.className = "btn-crimson-confirm w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer";
+        lbl.textContent = "Confirmar Reinício? (Clique novamente)";
+
+        pauseConfirmState.restartTimeout = setTimeout(() => {
+          resetPauseConfirmButtons();
+        }, 4000);
+        return;
+      }
+
+      closePauseModal(true);
+      startGame();
+    }
+
+    function handlePauseMenuClick() {
+      SoundEngine.playClick();
+      if (!pauseConfirmState.menuPending) {
+        pauseConfirmState.menuPending = true;
+        const btn = document.getElementById("btn-pause-menu");
+        const lbl = document.getElementById("label-pause-menu");
+        btn.className = "btn-crimson-confirm w-full py-3 px-5 rounded-2xl font-mono text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer";
+        lbl.textContent = "Confirmar Saída ao Menu? (Clique novamente)";
+
+        pauseConfirmState.menuTimeout = setTimeout(() => {
+          resetPauseConfirmButtons();
+        }, 4000);
+        return;
+      }
+
+      returnToMainMenu();
+    }
+
+    function returnToMainMenu() {
+      SoundEngine.playClick();
+      stopTimer();
+      gameState.status = "start";
+      gameState.isPaused = false;
+      resetPauseConfirmButtons();
+
+      document.getElementById("game-screen").classList.remove("game-screen-blurred");
+      document.getElementById("pause-modal").classList.add("hidden");
+      document.getElementById("phase-transition-modal").classList.add("hidden");
+      switchScreen("start-screen");
+    }
+
+    function switchScreen(screenId) {
+      const screens = ["start-screen", "game-screen", "victory-screen", "defeat-screen"];
+      screens.forEach((id) => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      const target = document.getElementById(screenId);
+      target.classList.remove("hidden");
+      if (screenId === "start-screen") {
+        target.classList.add("stagger-revealed");
+      }
+
+      const hud = document.getElementById("game-hud");
+      if (screenId === "game-screen") {
+        hud.classList.remove("hidden");
+      } else {
+        hud.classList.add("hidden");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function triggerExpeditionDive(callback) {
+      const diveOverlay = document.getElementById("expedition-dive-overlay");
+      if (!diveOverlay) {
+        callback();
+        return;
+      }
+
+      for (let i = 1; i <= 5; i++) {
+        const ring = document.getElementById(`dive-ring-${i}`);
+        if (ring) {
+          ring.style.transition = "none";
+          ring.style.transform = "rotate(0deg)";
+        }
+      }
+
+      diveOverlay.classList.add("active");
+
+      requestAnimationFrame(() => {
+        for (let i = 1; i <= 5; i++) {
+          const ring = document.getElementById(`dive-ring-${i}`);
+          if (ring) {
+            const dir = i % 2 === 0 ? 1 : -1;
+            ring.style.transition = "transform 1.45s cubic-bezier(0.34, 1.56, 0.64, 1)";
+            ring.style.transform = `rotate(${dir * (180 + i * 36)}deg)`;
+          }
+        }
+      });
+
+      setTimeout(() => {
+        diveOverlay.classList.remove("active");
+        callback();
+      }, 1600);
+    }
+
+    function startGame() {
+      SoundEngine.init();
+      SoundEngine.playClick();
+
+      gameState.status = "playing";
+      gameState.isPaused = false;
+      gameState.currentPhase = 1;
+      gameState.phaseCorrect = 0;
+      gameState.totalCorrect = 0;
+      gameState.totalAttempts = 0;
+      gameState.errorsCount = 0;
+      gameState.timeRemaining = TOTAL_TIME_SECONDS;
+      gameState.usedQuestionIndices = {
+        1: new Set(),
+        2: new Set(),
+        3: new Set(),
+        4: new Set(),
+        5: new Set()
+      };
+
+      document.getElementById("game-screen").classList.remove("game-screen-blurred");
+      document.getElementById("pause-modal").classList.add("hidden");
+
+      triggerExpeditionDive(() => {
+        switchScreen("game-screen");
+        loadQuestion();
+        startTimer();
+      });
+    }
+
+    function showPhaseTransition(prevCfg, nextCfg) {
+      document.getElementById("trans-badge").textContent = `ANEL ${prevCfg.romano} ALINHADO EM ESMERALDA`;
+      document.getElementById("trans-title").textContent = `Câmara ${nextCfg.romano}: ${nextCfg.titulo}`;
+      document.getElementById("trans-desc").textContent =
+        `${prevCfg.transicao} Novo desafio: ${nextCfg.conteudo} (Nível ${nextCfg.nivel} — ${nextCfg.acertosNecessarios} acertos necessários).`;
+      document.getElementById("phase-transition-modal").classList.remove("hidden");
+    }
+
+    function closePhaseTransition() {
+      SoundEngine.playClick();
+      document.getElementById("phase-transition-modal").classList.add("hidden");
+      loadQuestion();
+    }
+
+    function triggerVictory() {
+      gameState.status = "victory";
+      gameState.isPaused = false;
+      stopTimer();
+      SoundEngine.playVictory();
+      renderAstrolabe();
+
+      const accuracy =
+        gameState.totalAttempts > 0
+          ? Math.round((gameState.totalCorrect / gameState.totalAttempts) * 100)
+          : 100;
+
+      document.getElementById("vic-time").textContent = formatTime(gameState.timeRemaining);
+      document.getElementById("vic-accuracy").textContent = `${accuracy}%`;
+      document.getElementById("vic-crystals").textContent =
+        `${MAX_ERRORS - gameState.errorsCount} / ${MAX_ERRORS}`;
+
+      switchScreen("victory-screen");
+    }
+
+    function triggerDefeat(reason) {
+      gameState.status = "defeat";
+      gameState.isPaused = false;
+      stopTimer();
+      SoundEngine.playDefeat();
+
+      const cfg = FASES_CONFIG[gameState.currentPhase];
+      if (reason === "time") {
+        document.getElementById("def-reason-tag").textContent = "ESTABILIDADE TEMPORAL ESGOTADA (00:00)";
+        document.getElementById("def-title").textContent = "O Tempo Colapsou";
+        document.getElementById("def-narrative").textContent =
+          "O pêndulo astronômico atingiu o ponto zero antes que o quinto anel fosse alinhado. As comportas de Babel selaram-se novamente.";
+      } else {
+        document.getElementById("def-reason-tag").textContent = "3 CRISTAIS DE CONTENÇÃO ESTILHAÇADOS";
+        document.getElementById("def-title").textContent = "Colapso de Contenção";
+        document.getElementById("def-narrative").textContent =
+          "As divergências de cálculo sobrecarregaram os três Cristais de Contenção do observatório, travando os mecanismos.";
+      }
+
+      document.getElementById("def-seals").textContent = `${gameState.totalCorrect} / 12`;
+      document.getElementById("def-chamber").textContent = `Câmara ${cfg.romano}`;
+
+      switchScreen("defeat-screen");
+    }
+
+    /* Grimório de Fórmulas */
+    function openGrimoireModal() {
+      SoundEngine.playClick();
+      document.getElementById("grimorio-modal").classList.remove("hidden");
+    }
+
+    function closeGrimoireModal() {
+      SoundEngine.playClick();
+      document.getElementById("grimorio-modal").classList.add("hidden");
+    }
+
+    /* Visualizador do Banco Completo de 50 Questões */
+    let currentBankFilter = "all";
+
+    function openQuestionBankModal() {
+      SoundEngine.playClick();
+      currentBankFilter = "all";
+      document.getElementById("bank-search-input").value = "";
+      updateBankTabStyles();
+      renderQuestionBankList();
+      document.getElementById("bank-modal").classList.remove("hidden");
+    }
+
+    function closeQuestionBankModal() {
+      SoundEngine.playClick();
+      document.getElementById("bank-modal").classList.add("hidden");
+    }
+
+    function filterQuestionBank(phaseKey) {
+      SoundEngine.playClick();
+      currentBankFilter = phaseKey;
+      updateBankTabStyles();
+      renderQuestionBankList();
+    }
+
+    function updateBankTabStyles() {
+      const buttons = document.querySelectorAll(".bank-tab-btn");
+      buttons.forEach((btn) => {
+        if (btn.dataset.phase === currentBankFilter) {
+          btn.className = "bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs font-bold bg-brass text-obsidian cursor-pointer";
+        } else {
+          btn.className = "bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer";
+        }
+      });
+    }
+
+    function renderQuestionBankList() {
+      const container = document.getElementById("bank-questions-list");
+      const search = (document.getElementById("bank-search-input")?.value || "").trim().toLowerCase();
+      container.innerHTML = "";
+
+      const letters = ["A", "B", "C", "D", "E"];
+      const phasesToShow = currentBankFilter === "all" ? [1, 2, 3, 4, 5] : [Number(currentBankFilter)];
+      let matchCount = 0;
+
+      phasesToShow.forEach((phaseNum) => {
+        const cfg = FASES_CONFIG[phaseNum];
+        const list = BANCO_DE_QUESTOES[`fase${phaseNum}`];
+
+        list.forEach((q, idx) => {
+          const hay = `${q.tema} ${q.enunciado} ${q.resolucao} ${cfg.titulo}`.toLowerCase();
+          if (search && !hay.includes(search)) return;
+          matchCount++;
+
+          const card = document.createElement("article");
+          card.className = "vault-panel-inner rounded-2xl p-4 sm:p-5 border border-brass/25 text-left";
+
+          const altsHtml = q.alternativas
+            .map((alt, i) => {
+              const isRight = i === q.correta;
+              return `
+                <div class="px-3 py-1.5 rounded-lg font-mono text-xs flex items-center gap-2 ${
+                  isRight
+                    ? "bg-emeraldseal/20 border border-emeraldseal/50 text-emeraldseal font-bold"
+                    : "bg-obsidian/70 border border-brass/15 text-parchment/75"
+                }">
+                  <span>${letters[i]})</span>
+                  <span>${alt}</span>
+                  ${isRight ? '<span class="ml-auto">✓</span>' : ""}
+                </div>
+              `;
+            })
+            .join("");
+
+          card.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="font-display text-xs font-bold px-2.5 py-0.5 rounded-full bg-brass/20 text-brasslight border border-brass/40">
+                  Fase ${phaseNum} • Q${idx + 1}
+                </span>
+                <span class="font-mono text-[11px] text-parchment/60">${cfg.titulo} (${cfg.nivel})</span>
+              </div>
+              <span class="font-mono text-[11px] text-cyanbio bg-cyanbio/10 border border-cyanbio/25 px-2.5 py-0.5 rounded-full">
+                ${q.tema}
+              </span>
+            </div>
+            <p class="text-sm text-parchment/95 leading-relaxed mb-3">${q.enunciado}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-3">
+              ${altsHtml}
+            </div>
+            <div class="rounded-xl bg-obsidian/80 border border-brass/20 p-3">
+              <span class="font-mono text-[11px] uppercase text-brasslight block mb-1">✒ Resolução:</span>
+              <p class="font-mono text-xs text-parchment/85 leading-relaxed">${q.resolucao}</p>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      });
+
+      if (matchCount === 0) {
+        container.innerHTML = `
+          <div class="vault-panel-inner rounded-2xl p-8 text-center text-sm text-parchment/65 font-mono">
+            Nenhuma questão encontrada para o filtro informado.
+          </div>
+        `;
+      }
+    }
+
+    /* ==========================================================================
+       10. ATALHOS DE TECLADO (ENTER/ESPAÇO NO PRÓLOGO, ESC PARA PAUSA, A-E)
+       ========================================================================== */
+    document.addEventListener("keydown", (e) => {
+      const introActive = Intro3DController.active;
+      const grimoireOpen = !document.getElementById("grimorio-modal").classList.contains("hidden");
+      const bankOpen = !document.getElementById("bank-modal").classList.contains("hidden");
+      const transitionOpen = !document.getElementById("phase-transition-modal").classList.contains("hidden");
+
+      if (introActive) {
+        if (e.key === "Escape") {
+          skipIntroSequence(e);
+        } else if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          if (Intro3DController.readyToOpen) {
+            openVaultDoors();
+          } else {
+            skipIntroSequence(e);
+          }
+        }
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (grimoireOpen) {
+          closeGrimoireModal();
+          return;
+        }
+        if (bankOpen) {
+          closeQuestionBankModal();
+          return;
+        }
+        if (gameState.status === "playing" && !transitionOpen) {
+          if (gameState.isPaused) {
+            closePauseModal();
+          } else {
+            openPauseModal();
+          }
+        }
+        return;
+      }
+
+      if (gameState.status !== "playing" || gameState.isPaused || grimoireOpen || bankOpen) return;
+
+      if (transitionOpen) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          closePhaseTransition();
+        }
+        return;
+      }
+
+      const key = e.key.toUpperCase();
+      const map = { A: 0, B: 1, C: 2, D: 3, E: 4, "1": 0, "2": 1, "3": 2, "4": 3, "5": 4 };
+
+      if (!gameState.answeredCurrent && key in map) {
+        const idx = map[key];
+        if (gameState.currentQuestion && idx < gameState.currentQuestion.alternativas.length) {
+          selectAnswer(idx);
+        }
+      } else if (gameState.answeredCurrent && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        handleNextStep();
+      }
+    });
+
+    /* ==========================================================================
+       11. FUNDO ANIMADO EM CANVAS 2D (POEIRA DOURADA E ESTRELAS DO OBSERVATÓRIO)
+       ========================================================================== */
+    function initCosmicCanvas() {
+      const canvas = document.getElementById("cosmic-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const particles = Array.from({ length: 65 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 1.7 + 0.4,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: -Math.random() * 0.26 - 0.06,
+        alpha: Math.random() * 0.65 + 0.2,
+        gold: Math.random() > 0.32
+      }));
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+
+          if (p.y < -10) {
+            p.y = height + 10;
+            p.x = Math.random() * width;
+          }
+          if (p.x < -10) p.x = width + 10;
+          if (p.x > width + 10) p.x = -10;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.gold
+            ? `rgba(243, 210, 122, ${p.alpha})`
+            : `rgba(56, 189, 248, ${p.alpha * 0.85})`;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    // Inicialização segura após window.onload
+    window.addEventListener("load", () => {
+      initCosmicCanvas();
+      initAstrolabeTicks();
+      renderAstrolabe();
+      playIntroSequence(false);
+    });
+  </script>
+</body>
+</html>
