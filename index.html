@@ -868,7 +868,7 @@
         <!-- Emblema Superior -->
         <div class="stagger-item stagger-delay-1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brass/40 bg-obsidian/80 text-brasslight text-[11px] sm:text-xs font-mono uppercase tracking-widest mb-4">
           <span>✦</span>
-          <span>Matemática Discreta • Análise Combinatória</span>
+          <span>Jogo de Análise Combinatória</span>
           <span>✦</span>
         </div>
 
@@ -898,7 +898,7 @@
               <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-emeraldseal/15 text-emeraldseal border border-emeraldseal/30">1 acerto</span>
             </div>
             <p class="text-xs font-bold text-parchment">Câmara da Ampulheta</p>
-            <p class="text-[11px] text-parchment/65 mt-0.5">Princípio Fundamental da Contagem</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Princípio Fundamental da Contagem • 20 questões</p>
           </div>
 
           <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
@@ -907,7 +907,7 @@
               <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-cyanbio/15 text-cyanbio border border-cyanbio/30">2 acertos</span>
             </div>
             <p class="text-xs font-bold text-parchment">Galeria dos Pêndulos</p>
-            <p class="text-[11px] text-parchment/65 mt-0.5">Permutação Simples e com Repetição</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Permutação Simples e com Repetição • 20 questões</p>
           </div>
 
           <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
@@ -916,7 +916,7 @@
               <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-brass/20 text-brasslight border border-brass/35">2 acertos</span>
             </div>
             <p class="text-xs font-bold text-parchment">Salão das Engrenagens</p>
-            <p class="text-[11px] text-parchment/65 mt-0.5">Arranjo Simples</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Arranjo Simples • 20 questões</p>
           </div>
 
           <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25">
@@ -925,7 +925,7 @@
               <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">3 acertos</span>
             </div>
             <p class="text-xs font-bold text-parchment">Cúpula Celestial</p>
-            <p class="text-[11px] text-parchment/65 mt-0.5">Combinação Simples</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Combinação Simples • 20 questões</p>
           </div>
 
           <div class="vault-panel-inner rounded-2xl p-3.5 border border-brass/25 sm:col-span-2 lg:col-span-1">
@@ -934,13 +934,13 @@
               <span class="font-mono text-[11px] px-2 py-0.5 rounded-full bg-crimsonalert/20 text-crimsonalert border border-crimsonalert/30">4 acertos</span>
             </div>
             <p class="text-xs font-bold text-parchment">Santuário do Astrolábio</p>
-            <p class="text-[11px] text-parchment/65 mt-0.5">Integração e Restrições Avançadas</p>
+            <p class="text-[11px] text-parchment/65 mt-0.5">Integração e Restrições Avançadas • 20 questões</p>
           </div>
         </div>
 
         <!-- Regras Rápidas -->
         <div class="stagger-item stagger-delay-4 flex flex-wrap items-center justify-center gap-3 sm:gap-7 text-xs text-parchment/80 mb-7 font-mono">
-          <span class="flex items-center gap-1.5"><span class="text-brasslight">🏛️</span> 5 Câmaras</span>
+          <span class="flex items-center gap-1.5"><span class="text-brasslight">🏛️</span> 5 Câmaras (20 por fase)</span>
           <span class="flex items-center gap-1.5"><span class="text-cyanbio">◆</span> 12 Acertos</span>
           <span class="flex items-center gap-1.5"><span class="text-emeraldseal">⏳</span> 15:00</span>
           <span class="flex items-center gap-1.5"><span>💎</span> 3 Cristais de Contenção</span>
@@ -952,6 +952,12 @@
             class="btn-brass w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl font-display text-base sm:text-lg tracking-wider uppercase inline-flex items-center justify-center gap-3 cursor-pointer">
             <span>Iniciar Expedição</span>
             <span class="text-xl">→</span>
+          </button>
+
+          <button type="button" onclick="openQuestionBankModal()"
+            class="btn-obsidian w-full sm:w-auto px-5 py-3.5 sm:py-4 rounded-2xl font-mono text-xs sm:text-sm tracking-wide inline-flex items-center justify-center gap-2 text-brasslight border-brass/45 cursor-pointer">
+            <span>📜</span>
+            <span>Consultar Banco Completo (100 Questões)</span>
           </button>
 
           <button type="button" onclick="openQuestionBankModal()"
@@ -1410,7 +1416,7 @@
     </div>
 
     <!-- ========================================================================
-         6. MODAL DO BANCO COMPLETO DE 50 QUESTÕES (#bank-modal)
+         6. MODAL DO BANCO COMPLETO DE 100 QUESTÕES (#bank-modal)
          ======================================================================== -->
     <div id="bank-modal" class="hidden fixed inset-0 z-50 bg-obsidian/92 flex items-center justify-center p-3 sm:p-5">
       <div class="max-w-5xl w-full vault-panel rounded-3xl p-4 sm:p-8 max-h-[90dvh] flex flex-col animate-fade-up">
@@ -1420,10 +1426,10 @@
             <span class="text-2xl">📜</span>
             <div>
               <h3 class="font-display text-base sm:text-2xl font-bold gold-gradient-text">
-                Arquivo Oficial de Babel — 50 Questões Comentadas
+                Arquivo Oficial de Babel — 100 Questões Comentadas
               </h3>
               <p class="font-mono text-[11px] sm:text-xs text-parchment/70">
-                Banco completo organizado por câmara, gabarito e resolução matemática
+                Banco completo com 20 questões por fase, gabarito e resolução matemática
               </p>
             </div>
           </div>
@@ -1439,27 +1445,27 @@
           <div id="bank-phase-tabs" class="flex flex-wrap items-center gap-1.5">
             <button type="button" data-phase="all" onclick="filterQuestionBank('all')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs font-bold bg-brass text-obsidian cursor-pointer">
-              Todas (50)
+              Todas (100)
             </button>
             <button type="button" data-phase="1" onclick="filterQuestionBank('1')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
-              Fase 1 (10)
+              Fase 1 (20)
             </button>
             <button type="button" data-phase="2" onclick="filterQuestionBank('2')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
-              Fase 2 (10)
+              Fase 2 (20)
             </button>
             <button type="button" data-phase="3" onclick="filterQuestionBank('3')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
-              Fase 3 (10)
+              Fase 3 (20)
             </button>
             <button type="button" data-phase="4" onclick="filterQuestionBank('4')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
-              Fase 4 (10)
+              Fase 4 (20)
             </button>
             <button type="button" data-phase="5" onclick="filterQuestionBank('5')"
               class="bank-tab-btn px-3 py-1.5 rounded-xl font-mono text-xs btn-obsidian cursor-pointer">
-              Fase 5 (10)
+              Fase 5 (20)
             </button>
           </div>
 
@@ -1573,14 +1579,15 @@
   </div>
 
   <!-- ==========================================================================
-       SCRIPT PRINCIPAL: BANCO DE 50 QUESTÕES, CENA 3D THREE.JS, ÁUDIO E LÓGICA
+       SCRIPT PRINCIPAL: BANCO DE 100 QUESTÕES, BABEL AUDIO MANAGER, CENA 3D E LÓGICA
        ========================================================================== -->
   <script>
     /* ==========================================================================
-       1. BANCO OFICIAL DE QUESTÕES (50 QUESTÕES VERIFICADAS — 10 POR FASE)
+       1. BANCO OFICIAL DE QUESTÕES (100 QUESTÕES VERIFICADAS — 20 POR FASE)
        ========================================================================== */
     const BANCO_DE_QUESTOES = {
       fase1: [
+        // --- 10 Questões Base da Fase 1 ---
         {
           tema: "Princípio Fundamental da Contagem",
           enunciado: "Para atravessar a Câmara da Ampulheta, o Aprendiz precisa calibrar um filtro óptico composto por 1 lente de cristal, 1 aro de latão e 1 prisma de quartzo. Na bancada há 4 lentes, 3 aros e 5 prismas distintos. De quantas maneiras diferentes esse filtro pode ser montado?",
@@ -1650,9 +1657,81 @@
           alternativas: ["18", "24", "36", "60", "75"],
           correta: 2,
           resolucao: "Começamos pela restrição (unidade par): 3 opções (2, 4 ou 6). Sem repetição, sobram 4 opções para a centena e 3 para a dezena: 4 × 3 × 3 = 36 códigos."
+        },
+        // --- 10 Novas Questões da Fase 1 ---
+        {
+          tema: "Princípio Fundamental da Contagem",
+          enunciado: "Para ajustar o feixe de luz na Câmara da Ampulheta, o jogador deve escolher 1 posição em cada um dos 3 seletores de calibração: o Seletor de Inclinação (com 6 posições), o Seletor de Foco (com 4 posições) e o Seletor de Intensidade (com 3 posições). De quantas maneiras distintas o quadrante pode ser ajustado?",
+          alternativas: ["13", "36", "48", "72", "144"],
+          correta: 3,
+          resolucao: "Como as escolhas de cada seletor são independentes, aplicamos o Princípio Multiplicativo: 6 × 4 × 3 = 72 ajustes possíveis."
+        },
+        {
+          tema: "Princípio Fundamental da Contagem",
+          enunciado: "Na Biblioteca de Babel, um arquivista parte do Pátio das Estantes até o Observatório Superior passando obrigatoriamente pelo Salão dos Espelhos. Existem 3 galerias ligando o Pátio ao Salão, e 7 escadas em espiral ligando o Salão ao Observatório. Quantas rotas diferentes existem do Pátio até o Observatório?",
+          alternativas: ["10", "18", "21", "28", "42"],
+          correta: 2,
+          resolucao: "Multiplicamos as opções de cada trecho do trajeto: 3 × 7 = 21 rotas distintas."
+        },
+        {
+          tema: "Princípio Multiplicativo com Repetição",
+          enunciado: "Uma caixa de documentos antigos possui 4 roldanas giratórias, cada uma gravada com os 10 algarismos de 0 a 9. O mecanismo aceita repetição de algarismos. Quantos códigos de 4 dígitos podem ser formados?",
+          alternativas: ["40", "5.040", "9.000", "10.000", "40.000"],
+          correta: 3,
+          resolucao: "Cada uma das 4 roldanas admite 10 algarismos possíveis: 10 × 10 × 10 × 10 = 10⁴ = 10.000 códigos."
+        },
+        {
+          tema: "Princípio Multiplicativo (Sinais)",
+          enunciado: "Para comunicar-se entre torres do observatório em dias de névoa, os vigias içam 3 bandeiras em sequência vertical. Há 5 cores diferentes de bandeiras disponíveis, e uma mesma cor pode ser repetida no mesmo sinal. Quantos sinais diferentes de 3 bandeiras podem ser exibidos?",
+          alternativas: ["15", "60", "100", "125", "243"],
+          correta: 3,
+          resolucao: "Para cada uma das 3 posições do mastro há 5 opções de cor: 5 × 5 × 5 = 5³ = 125 sinais."
+        },
+        {
+          tema: "Princípio Multiplicativo com Estados",
+          enunciado: "Na entrada de uma câmara há 5 tochas de iluminação, e cada tocha pode estar independentemente acesa ou apagada. De quantas maneiras diferentes o conjunto das 5 tochas pode estar configurado?",
+          alternativas: ["10", "20", "25", "32", "64"],
+          correta: 3,
+          resolucao: "Cada uma das 5 tochas tem 2 estados possíveis (acesa ou apagada): 2⁵ = 32 configurações."
+        },
+        {
+          tema: "Princípio Multiplicativo sem Repetição",
+          enunciado: "Um painel mecânico exige uma senha de 3 algarismos distintos escolhidos apenas entre os dígitos pares não nulos {2, 4, 6, 8}. Quantas senhas válidas podem ser formadas?",
+          alternativas: ["12", "24", "64", "81", "120"],
+          correta: 1,
+          resolucao: "Sem repetição, há 4 opções para o 1º algarismo, 3 para o 2º e 2 para o 3º: 4 × 3 × 2 = 24 senhas."
+        },
+        {
+          tema: "Contagem Alfanumérica",
+          enunciado: "Cada tomo catalogado na Biblioteca de Babel recebe uma etiqueta formada por 1 letra (escolhida entre 26 letras do alfabeto) seguida de 3 algarismos (de 0 a 9), podendo haver repetição de letras e de algarismos. Quantas etiquetas diferentes podem ser geradas?",
+          alternativas: ["7.800", "23.400", "26.000", "260.000", "676.000"],
+          correta: 2,
+          resolucao: "Multiplicamos as possibilidades de cada etapa: 26 × 10 × 10 × 10 = 26 × 1.000 = 26.000 etiquetas."
+        },
+        {
+          tema: "Princípio Multiplicativo com Adjacência",
+          enunciado: "Um mosaico de parede é composto por 4 azulejos alinhados da esquerda para a direita. O relojoeiro dispõe de 3 cores de esmalte e quer que dois azulejos vizinhos nunca tenham a mesma cor. De quantas maneiras esse mosaico pode ser pintado?",
+          alternativas: ["12", "18", "24", "27", "81"],
+          correta: 2,
+          resolucao: "O 1º azulejo tem 3 cores; o 2º tem 2 (diferente do 1º); o 3º tem 2 (diferente do 2º); e o 4º tem 2 (diferente do 3º): 3 × 2 × 2 × 2 = 24 maneiras."
+        },
+        {
+          tema: "Eventos Independentes",
+          enunciado: "Em um teste de sorteio do cofre, o jogador lança 2 moedas comuns (cada uma com cara ou coroa) e 1 dado honesto de 6 faces (numeradas de 1 a 6). Quantos resultados possíveis distintos esse experimento pode produzir?",
+          alternativas: ["10", "12", "24", "36", "48"],
+          correta: 2,
+          resolucao: "Cada moeda tem 2 resultados possíveis e o dado tem 6: 2 × 2 × 6 = 24 resultados."
+        },
+        {
+          tema: "Contagem com Restrição Simples",
+          enunciado: "Usando os algarismos {1, 2, 3, 4, 5}, sem repetição, quantos números naturais de 3 algarismos terminam obrigatoriamente em 5?",
+          alternativas: ["10", "12", "20", "24", "60"],
+          correta: 1,
+          resolucao: "Fixamos o 5 na última posição (1 opção). Restam 4 algarismos para a 1ª casa e 3 para a 2ª casa: 4 × 3 × 1 = 12 números."
         }
       ],
       fase2: [
+        // --- 10 Questões Base da Fase 2 ---
         {
           tema: "Permutação com Repetição",
           enunciado: "Na entrada da Galeria dos Pêndulos, um cilindro de latão exibe as letras da palavra BABEL. Para calibrar a primeira engrenagem, o sistema exige saber quantos anagramas distintos (com ou sem sentido) podem ser formados com todas as letras dessa palavra.",
@@ -1722,9 +1801,81 @@
           alternativas: ["24", "48", "60", "96", "120"],
           correta: 1,
           resolucao: "Agrupando os 2 pergaminhos inseparáveis em 1 bloco, permutamos 4 elementos (4! = 24). Dentro do bloco, os 2 pergaminhos trocam de lugar de 2! = 2 formas: 24 × 2 = 48 maneiras."
+        },
+        // --- 10 Novas Questões da Fase 2 ---
+        {
+          tema: "Permutação Simples",
+          enunciado: "Na tampa de uma caixa de engrenagens está gravada a palavra ORDEM (5 letras distintas). Quantos anagramas (ordenamentos das letras, com ou sem sentido) podem ser formados com essas 5 letras?",
+          alternativas: ["25", "60", "120", "240", "720"],
+          correta: 2,
+          resolucao: "São 5 letras distintas permutadas em fila: P₅ = 5! = 5 × 4 × 3 × 2 × 1 = 120 anagramas."
+        },
+        {
+          tema: "Permutação Simples",
+          enunciado: "Na Galeria dos Pêndulos, há 4 pêndulos de comprimentos diferentes alinhados em suporte único. De quantas maneiras distintas o relojoeiro pode ordená-los da esquerda para a direita?",
+          alternativas: ["8", "16", "24", "48", "120"],
+          correta: 2,
+          resolucao: "Ordenar 4 elementos distintos em linha corresponde à permutação simples de 4: 4! = 24 maneiras."
+        },
+        {
+          tema: "Permutação Simples",
+          enunciado: "Quantos anagramas distintos possui a palavra ASTRO (5 letras diferentes)?",
+          alternativas: ["20", "60", "120", "240", "625"],
+          correta: 2,
+          resolucao: "Como todas as 5 letras são distintas, o total de anagramas é 5! = 120."
+        },
+        {
+          tema: "Permutação com Repetição",
+          enunciado: "Na palavra TORRE, há 5 letras, sendo a letra R repetida 2 vezes (T, O, R, R, E). Quantos anagramas distintos podem ser formados com as letras de TORRE?",
+          alternativas: ["24", "60", "120", "240", "600"],
+          correta: 1,
+          resolucao: "Aplicamos a permutação com repetição: 5! / 2! = 120 / 2 = 60 anagramas."
+        },
+        {
+          tema: "Permutação com Repetição de Objetos",
+          enunciado: "Uma canaleta comporta 5 esferas em fila, sendo 2 esferas vermelhas (idênticas entre si) e 3 esferas azuis (idênticas entre si). De quantas maneiras diferentes essas 5 esferas podem ser dispostas na canaleta?",
+          alternativas: ["6", "10", "12", "20", "120"],
+          correta: 1,
+          resolucao: "Permutação de 5 elementos com repetições de 2 e 3: 5! / (2! · 3!) = 120 / (2 · 6) = 10 disposições."
+        },
+        {
+          tema: "Permutação com Posição Fixa",
+          enunciado: "Quantos anagramas da palavra LUNA (4 letras distintas) começam obrigatoriamente pela consoante L?",
+          alternativas: ["4", "6", "12", "24", "48"],
+          correta: 1,
+          resolucao: "Fixando a letra L na 1ª posição, restam 3 letras distintas para permutar nas demais posições: 3! = 6 anagramas."
+        },
+        {
+          tema: "Permutação com Repetição",
+          enunciado: "A palavra PARADA possui 6 letras, sendo a letra A repetida 3 vezes (P, A, R, A, D, A). Quantos anagramas distintos podem ser formados com a palavra PARADA?",
+          alternativas: ["60", "120", "240", "360", "720"],
+          correta: 1,
+          resolucao: "Total de letras é 6, com repetição de 3 letras A: 6! / 3! = 720 / 6 = 120 anagramas."
+        },
+        {
+          tema: "Permutação em Bloco",
+          enunciado: "Em uma estante do observatório devem ser enfileirados 3 livros de Astronomia distintos e 2 livros de Matemática distintos, de modo que os 2 livros de Matemática fiquem sempre juntos lado a lado. De quantas maneiras isso pode ser feito?",
+          alternativas: ["12", "24", "48", "120", "240"],
+          correta: 2,
+          resolucao: "Tratamos os 2 livros de Matemática como 1 bloco, formando 4 blocos ao todo (4! = 24), e multiplicamos pela troca interna entre os 2 livros do bloco (2! = 2): 24 × 2 = 48 maneiras."
+        },
+        {
+          tema: "Permutação com Restrição Simples",
+          enunciado: "Quantos anagramas da palavra ARCO (4 letras distintas) começam por vogal e terminam por consoante?",
+          alternativas: ["4", "6", "8", "12", "24"],
+          correta: 2,
+          resolucao: "As vogais de ARCO são A e O (2 opções para o início); as consoantes são R e C (2 opções para o fim). As 2 letras do meio permutam entre si de 2! maneiras: 2 × 2! × 2 = 2 × 2 × 2 = 8 anagramas."
+        },
+        {
+          tema: "Permutação com Repetição de Objetos",
+          enunciado: "Sobre uma bancada são alinhadas 7 fitas de calibração: 4 fitas douradas idênticas e 3 fitas prateadas idênticas. De quantas maneiras distintas essas fitas podem ser ordenadas em linha?",
+          alternativas: ["21", "35", "42", "210", "5.040"],
+          correta: 1,
+          resolucao: "Permutação com repetição de 7 elementos (4 iguais e 3 iguais): 7! / (4! · 3!) = 5.040 / (24 · 6) = 35 ordenações."
         }
       ],
       fase3: [
+        // --- 10 Questões Base da Fase 3 ---
         {
           tema: "Arranjo Simples (Cargos Distintos)",
           enunciado: "Para reativar o mecanismo central do Salão das Engrenagens, os 8 Mestres Arquivistas da guilda precisam formar uma comissão diretiva ocupando 3 cargos distintos: Guardião do Tempo, Mestre das Lentes e Escriba das Cifras. Sabendo que cada mestre pode ocupar no máximo um cargo, de quantas maneiras diferentes essa diretoria pode ser formada?",
@@ -1794,9 +1945,81 @@
           alternativas: ["165", "330", "720", "990", "1.331"],
           correta: 3,
           resolucao: "Como as 3 chaves são diferentes e os 11 cofres são numerados, importar a ordem dos cofres escolhidos define um arranjo simples: A₁₁,₃ = 11 × 10 × 9 = 990 maneiras."
+        },
+        // --- 10 Novas Questões da Fase 3 ---
+        {
+          tema: "Arranjo Simples (Cargos Distintos)",
+          enunciado: "Entre 6 astrônomos do observatório, serão escolhidos 3 para ocupar, sem repetição, os postos distintos de Operador do Telescópio, Anotador de Efemérides e Guardião da Cúpula. De quantas maneiras essa escolha pode ser feita?",
+          alternativas: ["18", "20", "120", "216", "720"],
+          correta: 2,
+          resolucao: "Como os postos são distintos, a ordem importa: A₆,₃ = 6 × 5 × 4 = 120 maneiras."
+        },
+        {
+          tema: "Arranjo Simples",
+          enunciado: "Um cofre de latão aceita senhas formadas por 3 algarismos distintos escolhidos entre os dígitos {1, 2, 3, 4, 5, 6, 7, 8}. Quantas senhas distintas podem ser criadas?",
+          alternativas: ["56", "168", "336", "512", "1.680"],
+          correta: 2,
+          resolucao: "Ordenação de 3 elementos distintos dentre 8: A₈,₃ = 8 × 7 × 6 = 336 senhas."
+        },
+        {
+          tema: "Arranjo Simples (Posições Numeradas)",
+          enunciado: "Um mastro possui 4 posições distintas (do topo à base). O arquivista dispõe de 6 bandeiras de cores diferentes e quer içar 4 delas, uma em cada posição. De quantas maneiras diferentes o mastro pode ser preenchido?",
+          alternativas: ["24", "120", "360", "1.296", "5.040"],
+          correta: 2,
+          resolucao: "A posição de cada bandeira altera a sequência: A₆,₄ = 6 × 5 × 4 × 3 = 360 maneiras."
+        },
+        {
+          tema: "Arranjo Simples",
+          enunciado: "Quantos números inteiros de 3 algarismos distintos podem ser escritos utilizando apenas os algarismos {1, 2, 3, 4, 5, 6}?",
+          alternativas: ["20", "60", "120", "216", "720"],
+          correta: 2,
+          resolucao: "São 6 dígitos disponíveis e formamos sequências ordenadas de 3 sem repetição: A₆,₃ = 6 × 5 × 4 = 120 números."
+        },
+        {
+          tema: "Arranjo Simples (Classificação)",
+          enunciado: "Em uma competição entre 9 pêndulos mecânicos, serão entregues 3 medalhas diferentes (Ouro, Prata e Bronze) aos 3 primeiros colocados, sem empates. De quantas maneiras diferentes essas 3 medalhas podem ser distribuídas?",
+          alternativas: ["84", "168", "504", "729", "3.024"],
+          correta: 2,
+          resolucao: "Arranjo simples de 9 elementos tomados 3 a 3: A₉,₃ = 9 × 8 × 7 = 504 distribuições."
+        },
+        {
+          tema: "Arranjo com Restrição Inicial",
+          enunciado: "A partir das 6 letras distintas {A, B, C, D, E, F}, quantos códigos de 3 letras distintas podem ser formados de modo que comecem pela letra A?",
+          alternativas: ["15", "20", "30", "120", "216"],
+          correta: 1,
+          resolucao: "Fixamos A na 1ª posição (1 opção) e escolhemos ordenadamente 2 letras distintas entre as 5 restantes: 1 × A₅,₂ = 1 × (5 × 4) = 20 códigos."
+        },
+        {
+          tema: "Arranjo com Paridade",
+          enunciado: "Utilizando os algarismos {1, 2, 3, 4, 5}, quantos números de 3 algarismos distintos são pares?",
+          alternativas: ["12", "18", "24", "36", "60"],
+          correta: 2,
+          resolucao: "Entre os dígitos disponíveis, apenas 2 e 4 são pares (2 opções para a unidade). Para as 2 posições anteriores, restam 4 dígitos distintos: A₄,₂ × 2 = (4 × 3) × 2 = 24 números."
+        },
+        {
+          tema: "Arranjo com Restrição (Zero à Esquerda)",
+          enunciado: "Quantos números inteiros de 3 algarismos distintos podem ser formados usando os algarismos {0, 2, 4, 6, 8}, sabendo que o primeiro algarismo não pode ser 0?",
+          alternativas: ["16", "24", "48", "60", "100"],
+          correta: 2,
+          resolucao: "Há 4 opções não nulas para a centena (2, 4, 6, 8), e para as 2 casas seguintes restam 4 algarismos distintos (incluindo o 0): 4 × A₄,₂ = 4 × (4 × 3) = 48 números."
+        },
+        {
+          tema: "Arranjo Simples",
+          enunciado: "Em uma parede há 4 nichos numerados em sequência. O jogador possui 5 cristais diferentes e quer colocar 1 cristal em cada um de 3 nichos distintos (deixando 1 nicho vazio). De quantas maneiras diferentes isso pode ser feito?",
+          alternativas: ["10", "20", "60", "120", "240"],
+          correta: 2,
+          resolucao: "Escolhemos 3 cristais em ordem para preencher 3 nichos dentre 5: A₅,₃ = 5 × 4 × 3 = 60 maneiras."
+        },
+        {
+          tema: "Arranjo Composto",
+          enunciado: "Um sistema de catalogação cria códigos de 2 letras distintas (escolhidas entre {M, N, P, Q}) seguidas de 2 algarismos distintos (escolhidos entre {1, 3, 5, 7}). Quantos códigos diferentes podem ser formados?",
+          alternativas: ["24", "72", "144", "192", "256"],
+          correta: 2,
+          resolucao: "Multiplicamos os arranjos independentes de letras e algarismos: A₄,₂ × A₄,₂ = (4 × 3) × (4 × 3) = 12 × 12 = 144 códigos."
         }
       ],
       fase4: [
+        // --- 10 Questões Base da Fase 4 ---
         {
           tema: "Combinação Simples Direta",
           enunciado: "Para acender a lamparina astral da Cúpula Celestial, o explorador precisa misturar 3 essências distintas dentro de um único frasco de cristal, escolhidas entre 8 frascos disponíveis na bancada (a ordem em que são despejadas não altera a reação). De quantas maneiras diferentes essa mistura pode ser preparada?",
@@ -1866,9 +2089,81 @@
           alternativas: ["30", "40", "64", "74", "84"],
           correta: 3,
           resolucao: "Do total de acordes de 3 cordas (C₉,₃ = 84), excluímos os acordes formados apenas por cordas de bronze (C₅,₃ = 10): 84 − 10 = 74 acordes válidos."
+        },
+        // --- 10 Novas Questões da Fase 4 ---
+        {
+          tema: "Combinação Simples Direta",
+          enunciado: "Na Sala dos Mapas há 7 cartas celestes diferentes. O explorador deve selecionar 4 cartas para levar na expedição, sem que a ordem de escolha importe. Quantos grupos diferentes de 4 cartas podem ser formados?",
+          alternativas: ["21", "35", "70", "210", "840"],
+          correta: 1,
+          resolucao: "Como a ordem das cartas no grupo não importa, usamos combinação simples: C₇,₄ = (7 × 6 × 5 × 4) / (4 × 3 × 2 × 1) = 35 grupos."
+        },
+        {
+          tema: "Combinação Simples (Pares)",
+          enunciado: "Em um encontro da guilda participam 10 arquivistas. Cada arquivista joga exatamente uma partida contra cada um dos demais. Quantas partidas serão realizadas ao todo?",
+          alternativas: ["20", "45", "90", "100", "120"],
+          correta: 1,
+          resolucao: "Cada partida é formada por 2 jogadores escolhidos entre 10, sem ordem: C₁₀,₂ = (10 × 9) / 2 = 45 partidas."
+        },
+        {
+          tema: "Produto de Combinações",
+          enunciado: "Para inspecionar o núcleo do cofre, deve-se formar uma comissão com 2 relojoeiros (escolhidos entre 5 disponíveis) e 3 alquimistas (escolhidos entre 4 disponíveis). Quantas comissões distintas podem ser formadas?",
+          alternativas: ["14", "20", "40", "60", "120"],
+          correta: 2,
+          resolucao: "Multiplicamos as combinações de cada grupo: C₅,₂ × C₄,₃ = 10 × 4 = 40 comissões."
+        },
+        {
+          tema: "Geometria Combinatória",
+          enunciado: "Sobre a circunferência de um mostrador astronômico são marcados 8 pontos distintos. Quantos quadriláteros convexos distintos têm seus 4 vértices pertencentes a esses 8 pontos?",
+          alternativas: ["28", "56", "70", "140", "1.680"],
+          correta: 2,
+          resolucao: "Cada escolha de 4 pontos distintos sobre a circunferência define 1 quadrilátero convexo: C₈,₄ = (8 × 7 × 6 × 5) / 24 = 70 quadriláteros."
+        },
+        {
+          tema: "Geometria Combinatória (Retas)",
+          enunciado: "Em um plano há 9 pontos, dos quais nenhuns três são colineares. Quantas retas distintas ficam determinadas por pares desses 9 pontos?",
+          alternativas: ["18", "36", "72", "81", "126"],
+          correta: 1,
+          resolucao: "Dois pontos distintos determinam uma única reta: C₉,₂ = (9 × 8) / 2 = 36 retas."
+        },
+        {
+          tema: "Combinação com Elemento Obrigatório",
+          enunciado: "Uma bancada contém 10 engrenagens distintas, e o jogador precisa escolher 4 engrenagens para montar um conjunto, sendo obrigatório incluir a engrenagem mestra nº 1. De quantas maneiras o conjunto pode ser formado?",
+          alternativas: ["35", "56", "84", "120", "210"],
+          correta: 2,
+          resolucao: "Como a engrenagem nº 1 já está garantida, restam escolher 3 engrenagens dentre as 9 restantes: C₉,₃ = (9 × 8 × 7) / 6 = 84 maneiras."
+        },
+        {
+          tema: "Combinação com Restrição ('Pelo Menos')",
+          enunciado: "Uma equipe de 3 membros será formada a partir de 4 matemáticos e 3 físicos. Quantas equipes diferentes podem ser montadas contendo pelo menos 2 matemáticos?",
+          alternativas: ["12", "18", "22", "24", "35"],
+          correta: 2,
+          resolucao: "Somamos os casos válidos: 2 matemáticos e 1 físico (C₄,₂ × C₃,₁ = 6 × 3 = 18) mais 3 matemáticos e 0 físicos (C₄,₃ × C₃,₀ = 4 × 1 = 4): 18 + 4 = 22 equipes."
+        },
+        {
+          tema: "Geometria Combinatória com Colinearidade",
+          enunciado: "Em um plano, uma reta r contém 4 pontos e uma reta s, paralela a r, contém 5 pontos (sem outros pontos de interseção). Quantos triângulos distintos podem ser formados com vértices nesses pontos?",
+          alternativas: ["40", "50", "70", "80", "84"],
+          correta: 2,
+          resolucao: "Um triângulo exige 1 vértice numa reta e 2 na outra: (C₄,₁ × C₅,₂) + (C₄,₂ × C₅,₁) = (4 × 10) + (6 × 5) = 40 + 30 = 70 triângulos."
+        },
+        {
+          tema: "Combinação Complementar (Incompatibilidade)",
+          enunciado: "Entre 7 tomos raros numerados de 1 a 7, o arquivista deve escolher 3 tomos, mas os tomos 1 e 2 não podem figurar juntos na mesma seleção. De quantas maneiras essa escolha pode ser feita?",
+          alternativas: ["20", "25", "30", "35", "40"],
+          correta: 2,
+          resolucao: "Total de escolhas de 3 entre 7 é C₇,₃ = 35. Subtraímos os grupos que contêm 1 e 2 juntos (que exigem mais 1 tomo entre os 5 restantes, C₅,₁ = 5): 35 - 5 = 30 maneiras."
+        },
+        {
+          tema: "Combinação Complementar ('Pelo Menos Um')",
+          enunciado: "Uma caixa contém 4 cristais opacos e 3 cristais brilhantes, todos distintos. O jogador escolhe 3 cristais ao acaso para abrir um portal. De quantas maneiras a seleção pode conter pelo menos 1 cristal brilhante?",
+          alternativas: ["4", "21", "31", "35", "42"],
+          correta: 2,
+          resolucao: "Do total de seleções C₇,₃ = 35, retiramos aquelas sem nenhum cristal brilhante (apenas cristais opacos, C₄,₃ = 4): 35 - 4 = 31 maneiras."
         }
       ],
       fase5: [
+        // --- 10 Questões Base da Fase 5 ---
         {
           tema: "Integração: Combinação + Permutação",
           enunciado: "Para alinhar o anel externo do Astrolábio de Babel, o explorador precisa formar uma senha de 5 símbolos distintos alinhados em ordem horizontal, composta obrigatoriamente por 3 runas solares (escolhidas entre 5 disponíveis) e 2 runas lunares (escolhidas entre 4 disponíveis). Quantas sequências válidas podem ser formadas?",
@@ -1938,6 +2233,77 @@
           alternativas: ["200", "360", "400", "450", "500"],
           correta: 2,
           resolucao: "No palíndromo A B C B A, A deve ser par e não nulo (2, 4, 6 ou 8 → 4 opções), enquanto B e C podem ser qualquer dígito de 0 a 9 (10 opções cada): 4 × 10 × 10 = 400 números."
+        },
+        // --- 10 Novas Questões da Fase 5 ---
+        {
+          tema: "Integração: Combinação + Permutação",
+          enunciado: "Para destravar o núcleo do cofre, deve-se escolher 2 engrenagens entre 6 e 2 prismas entre 4, e depois alinhar as 4 peças escolhidas em fila. Quantas sequências diferentes podem ser formadas?",
+          alternativas: ["90", "360", "1.080", "2.160", "5.040"],
+          correta: 3,
+          resolucao: "Escolhemos os grupos (C₆,₂ × C₄,₂ = 15 × 6 = 90) e permutamos as 4 peças na fila (4! = 24): 90 × 24 = 2.160 sequências."
+        },
+        {
+          tema: "Permutação com Separação e Repetição",
+          enunciado: "Considere a palavra ALGEBRA (7 letras: consoantes L, G, B, R; vogais A, E, A). Quantos anagramas distintos dessa palavra podem ser formados de modo que duas vogais nunca fiquem lado a lado?",
+          alternativas: ["144", "360", "720", "1.440", "5.040"],
+          correta: 2,
+          resolucao: "Permutamos as 4 consoantes distintas (4! = 24), criando 5 espaços. Escolhemos 3 espaços para as vogais (C₅,₃ = 10) e permutamos A, E, A (3! / 2! = 3): 24 × 10 × 3 = 720 anagramas."
+        },
+        {
+          tema: "Permutação Circular",
+          enunciado: "5 sábios sentam-se ao redor de uma mesa circular do observatório. Considerando equivalentes as disposições obtidas por rotação, de quantas maneiras distintas eles podem sentar-se?",
+          alternativas: ["12", "24", "60", "120", "720"],
+          correta: 1,
+          resolucao: "Na permutação circular de n elementos, o total é (n - 1)!: PC₅ = (5 - 1)! = 4! = 24 maneiras."
+        },
+        {
+          tema: "Combinação com Repetição (Barras e Bolas)",
+          enunciado: "O relojoeiro possui 6 moedas de ouro idênticas para repartir entre 3 cofres distintos, podendo algum cofre receber 0 moedas. De quantas maneiras diferentes as moedas podem ser distribuídas?",
+          alternativas: ["15", "21", "28", "36", "56"],
+          correta: 2,
+          resolucao: "Soluções inteiras não negativas de x₁ + x₂ + x₃ = 6: CR₃,₆ = C₆₊₃₋₁, ₃₋₁ = C₈,₂ = (8 × 7) / 2 = 28 maneiras."
+        },
+        {
+          tema: "Combinação com Escolha de Liderança",
+          enunciado: "Entre 8 exploradores, deseja-se formar um grupo de 4 pessoas para uma missão no cofre, sendo 1 escolhido como Líder, 1 como Vice-Líder e 2 como auxiliares (sem diferença entre os auxiliares). De quantas maneiras esse grupo pode ser formado?",
+          alternativas: ["70", "210", "840", "1.680", "5.040"],
+          correta: 2,
+          resolucao: "Escolhemos Líder (8 opções), Vice-Líder (7 opções) e os 2 auxiliares sem ordem entre os 6 restantes (C₆,₂ = 15): 8 × 7 × 15 = 840 maneiras."
+        },
+        {
+          tema: "Caminhos Mínimos na Malha",
+          enunciado: "Em uma grade de ruas do observatório, um mensageiro sai do ponto (0,0) e vai até (3,3) andando apenas 1 unidade para Leste (L) ou 1 unidade para Norte (N) por passo. Quantos caminhos mínimos distintos existem?",
+          alternativas: ["6", "12", "20", "36", "64"],
+          correta: 2,
+          resolucao: "Cada caminho mínimo tem 3 passos L e 3 passos N (6 passos ao todo): 6! / (3! · 3!) = 20 caminhos."
+        },
+        {
+          tema: "Partição em Grupos de Mesmo Tamanho",
+          enunciado: "4 peças de relojoaria distintas devem ser divididas em 2 pares (cada par com 2 peças) para testes simultâneos em duas mesas idênticas. De quantas maneiras diferentes essa divisão pode ser feita?",
+          alternativas: ["2", "3", "6", "12", "24"],
+          correta: 1,
+          resolucao: "Escolhemos o 1º par (C₄,₂ = 6), o 2º par (C₂,₂ = 1) e dividimos por 2! = 2 porque os pares não têm ordem entre si: (6 × 1) / 2 = 3 divisões."
+        },
+        {
+          tema: "Combinação com Ordem Implícita",
+          enunciado: "Quantos números de 3 algarismos distintos escolhidos entre {1, 2, 3, 4, 5, 6, 7} apresentam seus algarismos em ordem estritamente decrescente da esquerda para a direita (por exemplo, 7-4-1)?",
+          alternativas: ["21", "35", "42", "210", "343"],
+          correta: 1,
+          resolucao: "Cada escolha de 3 algarismos distintos entre 7 admite apenas uma ordenação estritamente decrescente: C₇,₃ = (7 × 6 × 5) / 6 = 35 números."
+        },
+        {
+          tema: "Soluções Inteiras Positivas",
+          enunciado: "7 cristais luminosos idênticos devem ser distribuídos entre 3 câmaras, de modo que cada câmara receba pelo menos 1 cristal. De quantas maneiras diferentes isso pode ocorrer?",
+          alternativas: ["10", "15", "21", "28", "35"],
+          correta: 1,
+          resolucao: "Colocamos 1 cristal em cada uma das 3 câmaras e restam 4 cristais para distribuir livremente (y₁ + y₂ + y₃ = 4): C₄₊₃₋₁, ₃₋₁ = C₆,₂ = (6 × 5) / 2 = 15 maneiras."
+        },
+        {
+          tema: "Contagem com Restrições Múltiplas (Palíndromos)",
+          enunciado: "Um número inteiro de 3 algarismos é um palíndromo quando tem a forma A B A (com A ≠ 0 e repetição permitida). Quantos números palíndromos de 3 algarismos são ímpares?",
+          alternativas: ["25", "45", "50", "90", "100"],
+          correta: 2,
+          resolucao: "No formato A B A, o número é ímpar se A for ímpar (1, 3, 5, 7, 9 → 5 opções, o que também fixa o último dígito). O algarismo B do meio pode ser qualquer dígito de 0 a 9 (10 opções): 5 × 10 = 50 números."
         }
       ]
     };
