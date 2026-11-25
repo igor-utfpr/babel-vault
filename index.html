@@ -1372,11 +1372,26 @@
     <!-- ========================================================================
          4. OVERLAY DE TRANSIÇÃO ENTRE FASES
          ======================================================================== -->
-    <div id="phase-transition-modal" class="hidden fixed inset-0 z-40 bg-obsidian/92 flex items-center justify-center p-4">
-      <div class="max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-9 text-center border-2 border-emeraldseal/55 animate-fade-up">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emeraldseal/15 border-2 border-emeraldseal flex items-center justify-center text-2xl text-emeraldseal shadow-[0_0_28px_rgba(16,185,129,0.4)]">
-          ✦
+    <!-- ========================================================================
+4. OVERLAY DE TRANSIÇÃO ENTRE FASES (ASTROLÁBIO + FEIXE DE LUZ)
+         ======================================================================== -->
+    <div id="phase-transition-modal" class="hidden modal-smooth fixed inset-0 z-40 bg-obsidian/92 flex items-center justify-center p-4 overflow-hidden">
+      <div class="chamber-light-beam" aria-hidden="true"></div>
+      <div class="chamber-radial-aura" aria-hidden="true"></div>
+
+      <div class="modal-panel-box relative z-10 max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-9 text-center border-2 border-emeraldseal/55">
+        <!-- Mini-Astrolábio Animado de Alinhamento -->
+        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 relative flex items-center justify-center">
+          <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_0_22px_rgba(16,185,129,0.45)]">
+            <circle cx="60" cy="60" r="55" fill="rgba(11,14,20,0.9)" stroke="rgba(16,185,129,0.45)" stroke-width="1.2" />
+            <circle id="trans-ring-outer" class="trans-astrolabe-ring" cx="60" cy="60" r="46" fill="none" stroke="#10b981" stroke-width="2.2" stroke-dasharray="18 6" />
+            <circle id="trans-ring-mid" class="trans-astrolabe-ring" cx="60" cy="60" r="34" fill="none" stroke="#f3d27a" stroke-width="2" stroke-dasharray="12 5" />
+            <circle id="trans-ring-inner" class="trans-astrolabe-ring" cx="60" cy="60" r="22" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="8 4" />
+            <polygon points="60,47 73,60 60,73 47,60" fill="#0b0e14" stroke="#10b981" stroke-width="1.8" />
+            <circle cx="60" cy="60" r="4" fill="#f3d27a" />
+          </svg>
         </div>
+
         <p id="trans-badge" class="font-mono text-xs uppercase tracking-widest text-emeraldseal mb-2">
           ANEL I ALINHADO EM ESMERALDA
         </p>
