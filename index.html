@@ -2528,11 +2528,12 @@
        ========================================================================== */
    const SoundEngine = {
       ctx: null,
+      compressor: null,
       masterGain: null,
       reverbNode: null,
       muted: false,
       musicPlaying: false,
-      currentIntensity: 1,
+      currentIntensity: 0,
       musicInterval: null,
       tickInterval: null,
       arpInterval: null,
@@ -2555,6 +2556,7 @@
         plunge: ["./audio/mergulho_astrolabio.mp3", "./audio/mergulho_astrolabio.ogg"]
       },
       BGM_PHASE_PATHS: {
+        0: ["./audio/trilha_prologo.mp3", "./audio/trilha_prologo.ogg"],
         1: ["./audio/trilha_camara_1.mp3", "./audio/trilha_camara_1.ogg"],
         2: ["./audio/trilha_camara_2.mp3", "./audio/trilha_camara_2.ogg"],
         3: ["./audio/trilha_camara_3.mp3", "./audio/trilha_camara_3.ogg"],
@@ -2563,13 +2565,31 @@
       },
 
       CHAMBER_PROFILES: {
+        0: {
+          // Prólogo: suspense e mistério (Ré menor frígio/harmônico + trítono + caixa de música sombria)
+          droneFilter: 140,
+          droneGain: 0.030,
+          subGain: 0.016,
+          chordInterval: 5600,
+          chordCutoff: 460,
+          chordGain: 0.025,
+          tickInterval: 1500,
+          arpInterval: 1650,
+          arpNotes: [587.33, 622.25, 587.33, 440.0, 466.16, 415.30, 440.0, 554.37],
+          chords: [
+            [146.83, 174.61, 220.0, 311.13], // Dm(b9) - tensão misteriosa
+            [146.83, 207.65, 246.94, 349.23], // Trítono sobre pedal em Ré
+            [116.54, 174.61, 207.65, 293.66], // Bbm6 / suspensão sombria
+            [110.0, 233.08, 277.18, 349.23]   // A7(b9) preparando o retorno a Ré menor
+          ]
+        },
         1: {
-          droneFilter: 190,
-          droneGain: 0.038,
-          subGain: 0.0001,
+          droneFilter: 195,
+          droneGain: 0.032,
+          subGain: 0.00001,
           chordInterval: 4400,
-          chordCutoff: 620,
-          chordGain: 0.028,
+          chordCutoff: 640,
+          chordGain: 0.025,
           tickInterval: 1000,
           arpInterval: 0,
           chords: [
@@ -2581,11 +2601,11 @@
         },
         2: {
           droneFilter: 250,
-          droneGain: 0.044,
-          subGain: 0.0001,
+          droneGain: 0.036,
+          subGain: 0.00001,
           chordInterval: 3900,
-          chordCutoff: 880,
-          chordGain: 0.034,
+          chordCutoff: 860,
+          chordGain: 0.029,
           tickInterval: 500,
           arpInterval: 0,
           chords: [
@@ -2596,12 +2616,12 @@
           ]
         },
         3: {
-          droneFilter: 330,
-          droneGain: 0.052,
-          subGain: 0.018,
+          droneFilter: 320,
+          droneGain: 0.042,
+          subGain: 0.014,
           chordInterval: 3500,
-          chordCutoff: 1120,
-          chordGain: 0.040,
+          chordCutoff: 1080,
+          chordGain: 0.033,
           tickInterval: 500,
           arpInterval: 0,
           chords: [
@@ -2612,12 +2632,12 @@
           ]
         },
         4: {
-          droneFilter: 420,
-          droneGain: 0.058,
-          subGain: 0.028,
+          droneFilter: 400,
+          droneGain: 0.046,
+          subGain: 0.020,
           chordInterval: 3100,
-          chordCutoff: 1380,
-          chordGain: 0.045,
+          chordCutoff: 1320,
+          chordGain: 0.036,
           tickInterval: 500,
           arpInterval: 620,
           arpNotes: [587.33, 698.46, 880.0, 1046.5, 1174.66, 880.0],
@@ -2629,12 +2649,12 @@
           ]
         },
         5: {
-          droneFilter: 540,
-          droneGain: 0.068,
-          subGain: 0.042,
+          droneFilter: 500,
+          droneGain: 0.052,
+          subGain: 0.028,
           chordInterval: 2700,
-          chordCutoff: 1720,
-          chordGain: 0.052,
+          chordCutoff: 1620,
+          chordGain: 0.040,
           tickInterval: 375,
           arpInterval: 375,
           arpNotes: [587.33, 698.46, 880.0, 1174.66, 1318.51, 1174.66, 880.0, 698.46],
@@ -2682,27 +2702,39 @@
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (AudioCtx) {
               this.ctx = new AudioCtx();
+              const now = this.ctx.currentTime;
+
+              // Limitador dinâmico para impedir qualquer saturação ou "estouro"
+              this.compressor = this.ctx.createDynamicsCompressor();
+              this.compressor.threshold.setValueAtTime(-16, now);
+              this.compressor.knee.setValueAtTime(14, now);
+              this.compressor.ratio.setValueAtTime(10, now);
+              this.compressor.attack.setValueAtTime(0.004, now);
+              this.compressor.release.setValueAtTime(0.2, now);
 
               this.masterGain = this.ctx.createGain();
-              this.masterGain.gain.value = this.muted ? 0 : 1;
+              this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.88, now);
+
+              this.compressor.connect(this.masterGain);
               this.masterGain.connect(this.ctx.destination);
 
-              // Câmara de eco procedural (Impulse Response de 2.4s)
-              const len = Math.floor(this.ctx.sampleRate * 2.4);
+              // Câmara de eco suave (Impulse Response de 2.2s com decaimento limpo)
+              const len = Math.floor(this.ctx.sampleRate * 2.2);
               const impulse = this.ctx.createBuffer(2, len, this.ctx.sampleRate);
               for (let ch = 0; ch < 2; ch++) {
                 const data = impulse.getChannelData(ch);
                 for (let i = 0; i < len; i++) {
-                  data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+                  const fadeIn = Math.min(1, i / (this.ctx.sampleRate * 0.02));
+                  data[i] = fadeIn * (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8);
                 }
               }
               this.reverbNode = this.ctx.createConvolver();
               this.reverbNode.buffer = impulse;
 
               const wetGain = this.ctx.createGain();
-              wetGain.gain.value = 0.34;
+              wetGain.gain.setValueAtTime(0.28, now);
               this.reverbNode.connect(wetGain);
-              wetGain.connect(this.masterGain);
+              wetGain.connect(this.compressor);
             }
           }
           if (this.ctx && this.ctx.state === "suspended") {
@@ -2735,7 +2767,7 @@
         this.updateSoundLabels();
 
         if (this.masterGain && this.ctx) {
-          this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 1, this.ctx.currentTime, 0.03);
+          this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 0.88, this.ctx.currentTime, 0.04);
         }
         Object.values(this.howlerBgmByPhase).forEach((h) => {
           if (h) h.mute(this.muted);
@@ -2758,7 +2790,7 @@
             this.muted = false;
             this.updateSoundLabels();
             if (this.masterGain && this.ctx) {
-              this.masterGain.gain.setTargetAtTime(1, this.ctx.currentTime, 0.03);
+              this.masterGain.gain.setTargetAtTime(0.88, this.ctx.currentTime, 0.04);
             }
           }
           this.startMusic();
@@ -2781,15 +2813,15 @@
       },
 
       setChamberIntensity(phase) {
-        const level = Math.max(1, Math.min(5, Number(phase) || 1));
+        const parsed = Number(phase);
+        const level = Number.isFinite(parsed) ? Math.max(0, Math.min(5, parsed)) : 0;
         this.currentIntensity = level;
 
         if (!this.musicPlaying || this.muted) return;
 
-        // Crossfade caso exista faixa MP3/OGG dedicada para esta câmara
         const targetTrack = this.howlerBgmByPhase[level];
         if (targetTrack && targetTrack.state() === "loaded") {
-          if (this.activeHowlerPhase && this.activeHowlerPhase !== level) {
+          if (this.activeHowlerPhase !== null && this.activeHowlerPhase !== level) {
             const prevTrack = this.howlerBgmByPhase[this.activeHowlerPhase];
             if (prevTrack && prevTrack.playing()) {
               prevTrack.fade(prevTrack.volume(), 0, 900);
@@ -2800,17 +2832,17 @@
             targetTrack.mute(false);
             targetTrack.play();
           }
-          targetTrack.fade(targetTrack.volume(), 0.34 + level * 0.03, 1000);
+          targetTrack.fade(targetTrack.volume(), 0.32 + level * 0.03, 1000);
           this.activeHowlerPhase = level;
           return;
         }
 
-        const profile = this.CHAMBER_PROFILES[level];
+        const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[0];
         if (this.droneNodes && this.ctx) {
           const now = this.ctx.currentTime;
-          this.droneNodes.filter.frequency.setTargetAtTime(profile.droneFilter, now, 0.45);
-          this.droneNodes.gain.gain.setTargetAtTime(profile.droneGain, now, 0.45);
-          this.droneNodes.subGain.gain.setTargetAtTime(profile.subGain, now, 0.45);
+          this.droneNodes.filter.frequency.setTargetAtTime(profile.droneFilter, now, 0.5);
+          this.droneNodes.gain.gain.setTargetAtTime(profile.droneGain, now, 0.5);
+          this.droneNodes.subGain.gain.setTargetAtTime(profile.subGain, now, 0.5);
         }
 
         this.scheduleChamberLayers(level);
@@ -2818,17 +2850,17 @@
 
       scheduleChamberLayers(level) {
         this.clearMusicTimers();
-        const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[1];
+        const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[0];
         let chordStep = 0;
         this.tickStep = 0;
         this.arpStep = 0;
 
         const playNextChord = () => {
-          if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+          if (!this.musicPlaying || this.muted || (typeof gameState !== "undefined" && gameState.isPaused)) return;
           const chord = profile.chords[chordStep++ % profile.chords.length];
           this.playFilteredChord(
             chord,
-            (profile.chordInterval / 1000) * 0.92,
+            (profile.chordInterval / 1000) * 0.9,
             profile.chordGain,
             profile.chordCutoff
           );
@@ -2837,57 +2869,71 @@
         playNextChord();
         this.musicInterval = setInterval(playNextChord, profile.chordInterval);
 
-        // Pulso mecânico evolutivo (pêndulo simples nas fases 1-2; engrenagens pesadas nas fases 3-5)
-        this.tickInterval = setInterval(() => {
-          if (!this.musicPlaying || this.muted || gameState.isPaused) return;
-          const step = this.tickStep++;
-          const isAccent = step % 2 === 0;
+        if (profile.tickInterval > 0) {
+          this.tickInterval = setInterval(() => {
+            if (!this.musicPlaying || this.muted || (typeof gameState !== "undefined" && gameState.isPaused)) return;
+            const step = this.tickStep++;
+            const isAccent = step % 2 === 0;
 
-          if (level <= 2) {
-            this.playMechanicalLatch(isAccent ? 215 : 175, 0.022 + level * 0.004, 0.04);
-          } else {
-            this.playMechanicalLatch(
-              isAccent ? 120 + level * 8 : 195 + level * 10,
-              isAccent ? 0.055 : 0.032,
-              isAccent ? 0.08 : 0.045
-            );
-            if (isAccent) {
-              this.playFilteredChord([73.42, 146.83], 0.28, 0.032 + level * 0.005, 320);
+            if (level === 0) {
+              // Batimento lento e profundo de pêndulo distante atrás das portas do cofre
+              this.playClockworkPulse(isAccent ? 115 : 95, isAccent ? 0.018 : 0.012, 0.11);
+            } else if (level <= 2) {
+              this.playClockworkPulse(isAccent ? 310 : 245, 0.016 + level * 0.003, 0.055);
+            } else {
+              this.playClockworkPulse(
+                isAccent ? 145 + level * 8 : 260 + level * 10,
+                isAccent ? 0.036 : 0.022,
+                isAccent ? 0.09 : 0.055
+              );
+              if (isAccent) {
+                this.playFilteredChord([73.42, 146.83], 0.32, 0.022 + level * 0.003, 300);
+              }
             }
-          }
-        }, profile.tickInterval);
+          }, profile.tickInterval);
+        }
 
-        // Camada de arpejo cristalino nas Câmaras IV e V
         if (profile.arpInterval > 0 && profile.arpNotes) {
           this.arpInterval = setInterval(() => {
-            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+            if (!this.musicPlaying || this.muted || (typeof gameState !== "undefined" && gameState.isPaused)) return;
             const note = profile.arpNotes[this.arpStep++ % profile.arpNotes.length];
-            this.playFilteredChord([note], 0.55, 0.024, 2100);
+            this.playFilteredChord(
+              [note],
+              level === 0 ? 1.45 : 0.72,
+              level === 0 ? 0.013 : 0.020,
+              level === 0 ? 1150 : 1850
+            );
           }, profile.arpInterval);
         }
-      },
 
       startMusic() {
         if (this.musicPlaying || this.muted) return;
         this.init();
+        if (!this.ctx) return;
+
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().then(() => {
+            if (!this.musicPlaying && !this.muted) this.startMusic();
+          }).catch(() => {});
+          return;
+        }
+
         this.musicPlaying = true;
         const icon = document.getElementById("icon-music");
         if (icon) icon.textContent = "🎶";
 
-        const level = this.currentIntensity || 1;
+        const level = this.currentIntensity || 0;
         const targetTrack = this.howlerBgmByPhase[level];
         if (targetTrack && targetTrack.state() === "loaded") {
           targetTrack.mute(false);
           targetTrack.play();
-          targetTrack.fade(0, 0.34 + level * 0.03, 1200);
+          targetTrack.fade(0, 0.32 + level * 0.03, 1200);
           this.activeHowlerPhase = level;
           return;
         }
 
-        if (!this.ctx) return;
-
         try {
-          const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[1];
+          const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[0];
           const now = this.ctx.currentTime;
 
           const osc1 = this.ctx.createOscillator();
@@ -2902,29 +2948,29 @@
           osc2.type = "triangle";
           osc2.frequency.setValueAtTime(110.0, now); // A2
           subOsc.type = "sine";
-          subOsc.frequency.setValueAtTime(36.71, now); // D1 (sub-grave profundo)
+          subOsc.frequency.setValueAtTime(36.71, now); // D1
 
           filter.type = "lowpass";
           filter.frequency.setValueAtTime(profile.droneFilter, now);
 
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.exponentialRampToValueAtTime(profile.droneGain, now + 1.8);
+          gain.gain.setValueAtTime(0.00001, now);
+          gain.gain.exponentialRampToValueAtTime(profile.droneGain, now + 2.0);
 
-          subGain.gain.setValueAtTime(0.0001, now);
-          subGain.gain.exponentialRampToValueAtTime(profile.subGain, now + 1.8);
+          subGain.gain.setValueAtTime(0.00001, now);
+          subGain.gain.exponentialRampToValueAtTime(profile.subGain, now + 2.0);
 
           osc1.connect(filter);
           osc2.connect(filter);
           filter.connect(gain);
-          gain.connect(this.masterGain);
+          gain.connect(this.compressor);
           if (this.reverbNode) gain.connect(this.reverbNode);
 
           subOsc.connect(subGain);
-          subGain.connect(this.masterGain);
+          subGain.connect(this.compressor);
 
-          osc1.start();
-          osc2.start();
-          subOsc.start();
+          osc1.start(now);
+          osc2.start(now);
+          subOsc.start(now);
           this.droneNodes = { osc1, osc2, subOsc, filter, gain, subGain };
 
           this.scheduleChamberLayers(level);
@@ -2953,8 +2999,8 @@
         if (this.droneNodes && this.ctx) {
           try {
             const now = this.ctx.currentTime;
-            this.droneNodes.gain.gain.setTargetAtTime(0.0001, now, 0.35);
-            this.droneNodes.subGain.gain.setTargetAtTime(0.0001, now, 0.35);
+            this.droneNodes.gain.gain.setTargetAtTime(0.00001, now, 0.35);
+            this.droneNodes.subGain.gain.setTargetAtTime(0.00001, now, 0.35);
             const oldNodes = this.droneNodes;
             this.droneNodes = null;
             setTimeout(() => {
@@ -2963,125 +3009,141 @@
                 oldNodes.osc2?.stop();
                 oldNodes.subOsc?.stop();
               } catch (e) {}
-            }, 650);
+            }, 700);
           } catch (e) {}
         }
       },
 
-      playFilteredChord(freqs, duration = 1.4, peakGain = 0.085, cutoffMax = 1250) {
+      playFilteredChord(freqs, duration = 1.4, peakGain = 0.065, cutoffMax = 1200) {
         if (this.muted) return;
         try {
           this.init();
           if (!this.ctx || this.ctx.state !== "running") return;
           const now = this.ctx.currentTime;
+          const safePeak = Math.min(0.09, Math.max(0.002, peakGain / Math.sqrt(freqs.length)));
 
           const filter = this.ctx.createBiquadFilter();
           filter.type = "lowpass";
-          filter.frequency.setValueAtTime(260, now);
-          filter.frequency.exponentialRampToValueAtTime(cutoffMax, now + duration * 0.4);
-          filter.frequency.exponentialRampToValueAtTime(320, now + duration);
+          filter.frequency.setValueAtTime(240, now);
+          filter.frequency.exponentialRampToValueAtTime(cutoffMax, now + duration * 0.38);
+          filter.frequency.exponentialRampToValueAtTime(280, now + duration);
 
           const env = this.ctx.createGain();
-          env.gain.setValueAtTime(0.0001, now);
-          env.gain.linearRampToValueAtTime(peakGain, now + 0.07);
-          env.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+          env.gain.setValueAtTime(0.00001, now);
+          env.gain.linearRampToValueAtTime(safePeak, now + 0.085);
+          env.gain.exponentialRampToValueAtTime(0.00005, now + duration);
+          env.gain.linearRampToValueAtTime(0, now + duration + 0.03);
 
           filter.connect(env);
-          env.connect(this.masterGain);
+          env.connect(this.compressor);
           if (this.reverbNode) env.connect(this.reverbNode);
 
           freqs.forEach((f, idx) => {
             const osc = this.ctx.createOscillator();
             osc.type = idx === 0 ? "sine" : "triangle";
             osc.frequency.setValueAtTime(f, now);
-            osc.detune.setValueAtTime((idx - 1) * 6, now);
+            osc.detune.setValueAtTime((idx - 1) * 5, now);
             osc.connect(filter);
             osc.start(now);
-            osc.stop(now + duration + 0.05);
+            osc.stop(now + duration + 0.04);
           });
         } catch (e) {}
       },
 
-      playMechanicalLatch(pitchBase = 170, volume = 0.14, lengthSec = 0.09) {
+      // Pulso mecânico limpo (sem ruído branco e com ataque suave anti-estouro)
+      playClockworkPulse(freq = 280, volume = 0.045, lengthSec = 0.075) {
         if (this.muted) return;
         try {
           this.init();
           if (!this.ctx || this.ctx.state !== "running") return;
           const now = this.ctx.currentTime;
-          const bufSize = Math.floor(this.ctx.sampleRate * lengthSec);
-          const noiseBuf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
-          const data = noiseBuf.getChannelData(0);
-          for (let i = 0; i < bufSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.32));
-          }
 
-          const noise = this.ctx.createBufferSource();
-          noise.buffer = noiseBuf;
+          const oscBody = this.ctx.createOscillator();
+          const oscOver = this.ctx.createOscillator();
+          const env = this.ctx.createGain();
 
-          const bp = this.ctx.createBiquadFilter();
-          bp.type = "bandpass";
-          bp.frequency.setValueAtTime(pitchBase * 4.2, now);
-          bp.Q.value = 4.0;
+          oscBody.type = "sine";
+          oscBody.frequency.setValueAtTime(freq * 1.35, now);
+          oscBody.frequency.exponentialRampToValueAtTime(freq * 0.72, now + lengthSec);
 
-          const gain = this.ctx.createGain();
-          gain.gain.setValueAtTime(volume, now);
-          gain.gain.exponentialRampToValueAtTime(0.0008, now + lengthSec);
+          oscOver.type = "triangle";
+          oscOver.frequency.setValueAtTime(freq * 2.5, now);
+          oscOver.frequency.exponentialRampToValueAtTime(freq * 1.1, now + lengthSec * 0.7);
 
-          noise.connect(bp);
-          bp.connect(gain);
-          gain.connect(this.masterGain);
-          if (this.reverbNode) gain.connect(this.reverbNode);
+          env.gain.setValueAtTime(0.00001, now);
+          env.gain.linearRampToValueAtTime(volume, now + 0.008);
+          env.gain.exponentialRampToValueAtTime(0.00005, now + lengthSec);
+          env.gain.linearRampToValueAtTime(0, now + lengthSec + 0.015);
 
-          noise.start(now);
+          oscBody.connect(env);
+          oscOver.connect(env);
+          env.connect(this.compressor);
+          if (this.reverbNode) env.connect(this.reverbNode);
+
+          oscBody.start(now);
+          oscOver.start(now);
+          oscBody.stop(now + lengthSec + 0.02);
+          oscOver.stop(now + lengthSec + 0.02);
         } catch (e) {}
       },
 
       playClick() {
         if (this.tryPlayHowlerSfx("click")) return;
-        this.playMechanicalLatch(185, 0.13, 0.065);
-        this.playFilteredChord([587.33, 880.0], 0.18, 0.035, 1400);
+        this.playClockworkPulse(420, 0.045, 0.055);
+        this.playFilteredChord([880.0, 1318.51], 0.16, 0.024, 1500);
       },
 
       playCorrect() {
         if (this.tryPlayHowlerSfx("correct")) return;
-        this.playMechanicalLatch(210, 0.14, 0.08);
-        this.playFilteredChord([293.66, 369.99, 440.0, 587.33], 1.35, 0.095, 1650);
+        // Harpa cristalina ascendente em Ré maior
+        this.playClockworkPulse(330, 0.04, 0.07);
+        this.playFilteredChord([293.66, 440.0, 587.33], 1.15, 0.065, 1650);
+        setTimeout(() => {
+          this.playFilteredChord([369.99, 587.33, 739.99, 880.0], 1.45, 0.07, 1950);
+        }, 110);
       },
 
       playPhaseUnlock() {
         if (this.tryPlayHowlerSfx("phase")) return;
-        this.playMechanicalLatch(140, 0.18, 0.14);
-        this.playFilteredChord([146.83, 293.66, 440.0, 587.33, 739.99], 2.1, 0.11, 1900);
+        this.playClockworkPulse(190, 0.055, 0.12);
+        this.playFilteredChord([146.83, 293.66, 440.0, 587.33], 1.8, 0.07, 1750);
+        setTimeout(() => {
+          this.playFilteredChord([220.0, 440.0, 659.25, 880.0], 2.1, 0.075, 2050);
+        }, 180);
       },
 
       playWrong() {
         if (this.tryPlayHowlerSfx("wrong")) return;
-        this.playMechanicalLatch(95, 0.24, 0.18);
-        this.playFilteredChord([98.0, 103.83, 146.83], 1.15, 0.11, 520);
+        // Sino grave de bronze amortecido (quinta diminuta suave, sem estalo)
+        this.playClockworkPulse(125, 0.055, 0.14);
+        this.playFilteredChord([146.83, 207.65, 293.66], 1.05, 0.062, 580);
+        setTimeout(() => {
+          this.playFilteredChord([110.0, 155.56], 1.25, 0.058, 440);
+        }, 140);
       },
 
       playVictory() {
         if (this.tryPlayHowlerSfx("victory")) return;
-        this.playFilteredChord([146.83, 293.66, 369.99, 440.0, 587.33], 1.6, 0.10, 1800);
+        this.playFilteredChord([146.83, 293.66, 369.99, 440.0, 587.33], 1.6, 0.075, 1800);
         setTimeout(() => {
-          this.playFilteredChord([220.0, 440.0, 587.33, 739.99, 880.0], 2.4, 0.11, 2200);
-        }, 380);
+          this.playFilteredChord([220.0, 440.0, 587.33, 739.99, 880.0], 2.4, 0.08, 2100);
+        }, 360);
       },
 
       playDefeat() {
         if (this.tryPlayHowlerSfx("defeat")) return;
-        this.playMechanicalLatch(82, 0.22, 0.22);
-        this.playFilteredChord([110.0, 130.81, 164.81], 1.5, 0.09, 460);
+        this.playClockworkPulse(110, 0.05, 0.16);
+        this.playFilteredChord([146.83, 174.61, 220.0], 1.4, 0.06, 480);
         setTimeout(() => {
-          this.playFilteredChord([73.42, 110.0, 138.59], 2.1, 0.10, 380);
-        }, 480);
+          this.playFilteredChord([73.42, 110.0, 138.59], 2.0, 0.065, 390);
+        }, 440);
       },
 
       playSafeIntroGear(step = 0) {
         try {
           if (this.muted || !this.ctx || this.ctx.state !== "running") return;
-          this.playMechanicalLatch(135 + step * 18, 0.11, 0.09);
-          this.playFilteredChord([146.83 + step * 36.7, 293.66 + step * 55], 0.45, 0.04, 950);
+          this.playClockworkPulse(185 + step * 24, 0.035, 0.085);
+          this.playFilteredChord([146.83 + step * 36.7, 293.66 + step * 55], 0.5, 0.03, 920);
         } catch (e) {}
       },
 
@@ -3091,8 +3153,8 @@
           this.init();
           if (this.tryPlayHowlerSfx("plunge")) return;
           const runPlunge = () => {
-            this.playMechanicalLatch(90, 0.22, 0.22);
-            this.playFilteredChord([73.42, 146.83, 220.0, 293.66, 440.0], 2.2, 0.11, 1750);
+            this.playClockworkPulse(115, 0.065, 0.18);
+            this.playFilteredChord([73.42, 146.83, 220.0, 293.66, 440.0], 2.2, 0.075, 1650);
           };
           if (this.ctx && this.ctx.state === "running") {
             runPlunge();
@@ -3102,7 +3164,25 @@
         } catch (e) {}
       }
     };
+    // Inicia música ambiente desde o Prólogo sem bloquear o som de abertura
+    (function bootstrapPrologueAudio() {
+      const startPrologueBgm = () => {
+        if (SoundEngine.muted || SoundEngine.musicPlaying) return;
+        SoundEngine.init();
+        if (SoundEngine.currentIntensity === 0 && typeof gameState !== "undefined" && gameState.status === "playing") {
+          SoundEngine.setChamberIntensity(gameState.currentPhase || 1);
+        }
+        SoundEngine.startMusic();
+      };
 
+      window.addEventListener("DOMContentLoaded", () => {
+        startPrologueBgm();
+      }, { once: true });
+
+      ["pointerdown", "keydown"].forEach((evt) => {
+        document.addEventListener(evt, startPrologueBgm, { once: true, passive: true });
+      });
+    })();
     /* ==========================================================================
        4. CENA 3D WEBGL (THREE.JS r128) — "O DESPERTAR DO COFRE DE BABEL"
           - Esfera Armilar Astronômica 3D com 5 anéis metálicos concêntricos e
@@ -4372,7 +4452,7 @@
       document.getElementById("phase-transition-modal").classList.add("hidden");
       switchScreen("start-screen");
 
-      SoundEngine.setChamberIntensity(1);
+      SoundEngine.setChamberIntensity(0);
     }
 
     let screenTransitionTimer = null;
