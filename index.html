@@ -3775,6 +3775,15 @@
         optionsContainer.appendChild(btn);
       });
 
+      const stemEl = document.getElementById("q-stem");
+      const optsEl = document.getElementById("q-options");
+      [stemEl, optsEl].forEach((el) => {
+        if (!el) return;
+        el.classList.remove("question-swap-in");
+        void el.offsetWidth;
+        el.classList.add("question-swap-in");
+      });
+
       updateHUD();
       renderAstrolabe();
     }
@@ -4009,24 +4018,54 @@
       switchScreen("start-screen");
     }
 
+    let screenTransitionTimer = null;
+    let closingPhaseTransition = false;
+
     function switchScreen(screenId) {
-      const screens = ["start-screen", "game-screen", "victory-screen", "defeat-screen"];
-      screens.forEach((id) => {
-        document.getElementById(id).classList.add("hidden");
-      });
-      const target = document.getElementById(screenId);
-      target.classList.remove("hidden");
-      if (screenId === "start-screen") {
-        target.classList.add("stagger-revealed");
+      if (screenTransitionTimer) {
+        clearTimeout(screenTransitionTimer);
+        screenTransitionTimer = null;
       }
 
-      const hud = document.getElementById("game-hud");
-      if (screenId === "game-screen") {
-        hud.classList.remove("hidden");
+      const screens = ["start-screen", "game-screen", "victory-screen", "defeat-screen"];
+      const currentVisible = screens
+        .map((id) => document.getElementById(id))
+        .find((el) => el && !el.classList.contains("hidden") && el.id !== screenId);
+
+      const applySwitch = () => {
+        screens.forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.classList.add("hidden");
+          el.classList.remove("screen-leaving", "screen-entering");
+        });
+
+        const target = document.getElementById(screenId);
+        if (target) {
+          target.classList.add("screen-transition-base");
+          target.classList.remove("hidden");
+          void target.offsetWidth;
+          target.classList.add("screen-entering");
+          if (screenId === "start-screen") {
+            target.classList.add("stagger-revealed");
+          }
+        }
+
+        const hud = document.getElementById("game-hud");
+        if (screenId === "game-screen") {
+          hud.classList.remove("hidden");
+        } else {
+          hud.classList.add("hidden");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      if (currentVisible) {
+        currentVisible.classList.add("screen-transition-base", "screen-leaving");
+        screenTransitionTimer = setTimeout(applySwitch, 220);
       } else {
-        hud.classList.add("hidden");
+        applySwitch();
       }
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function triggerExpeditionDive(callback) {
@@ -4094,17 +4133,56 @@
     }
 
     function showPhaseTransition(prevCfg, nextCfg) {
+      closingPhaseTransition = false;
+      const modal = document.getElementById("phase-transition-modal");
       document.getElementById("trans-badge").textContent = `ANEL ${prevCfg.romano} ALINHADO EM ESMERALDA`;
       document.getElementById("trans-title").textContent = `Câmara ${nextCfg.romano}: ${nextCfg.titulo}`;
       document.getElementById("trans-desc").textContent =
         `${prevCfg.transicao} Novo desafio: ${nextCfg.conteudo} (Nível ${nextCfg.nivel} — ${nextCfg.acertosNecessarios} acertos necessários).`;
-      document.getElementById("phase-transition-modal").classList.remove("hidden");
+
+      const rOuter = document.getElementById("trans-ring-outer");
+      const rMid = document.getElementById("trans-ring-mid");
+      const rInner = document.getElementById("trans-ring-inner");
+      [rOuter, rMid, rInner].forEach((r) => {
+        if (r) {
+          r.style.transition = "none";
+          r.style.transform = "rotate(0deg)";
+        }
+      });
+
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
+
+      requestAnimationFrame(() => {
+        if (rOuter) {
+          rOuter.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rOuter.style.transform = "rotate(210deg)";
+        }
+        if (rMid) {
+          rMid.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rMid.style.transform = "rotate(-180deg)";
+        }
+        if (rInner) {
+          rInner.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rInner.style.transform = "rotate(240deg)";
+        }
+      });
     }
 
     function closePhaseTransition() {
+      if (closingPhaseTransition) return;
+      closingPhaseTransition = true;
       SoundEngine.playClick();
-      document.getElementById("phase-transition-modal").classList.add("hidden");
-      loadQuestion();
+
+      const modal = document.getElementById("phase-transition-modal");
+      modal.classList.remove("modal-visible");
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        closingPhaseTransition = false;
+        loadQuestion();
+      }, 240);
     }
 
     function triggerVictory() {
@@ -4155,15 +4233,21 @@
     /* Grimório de Fórmulas */
     function openGrimoireModal() {
       SoundEngine.playClick();
-      document.getElementById("grimorio-modal").classList.remove("hidden");
+      const modal = document.getElementById("grimorio-modal");
+      modal.classList.add("modal-smooth");
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
     }
 
     function closeGrimoireModal() {
       SoundEngine.playClick();
-      document.getElementById("grimorio-modal").classList.add("hidden");
+      const modal = document.getElementById("grimorio-modal");
+      modal.classList.remove("modal-visible");
+      setTimeout(() => modal.classList.add("hidden"), 220);
     }
 
-    /* Visualizador do Banco Completo de 50 Questões */
+    /* Visualizador do Banco Completo de 100 Questões */
     let currentBankFilter = "all";
 
     function openQuestionBankModal() {
@@ -4172,12 +4256,18 @@
       document.getElementById("bank-search-input").value = "";
       updateBankTabStyles();
       renderQuestionBankList();
-      document.getElementById("bank-modal").classList.remove("hidden");
+      const modal = document.getElementById("bank-modal");
+      modal.classList.add("modal-smooth");
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
     }
 
     function closeQuestionBankModal() {
       SoundEngine.playClick();
-      document.getElementById("bank-modal").classList.add("hidden");
+      const modal = document.getElementById("bank-modal");
+      modal.classList.remove("modal-visible");
+      setTimeout(() => modal.classList.add("hidden"), 220);
     }
 
     function filterQuestionBank(phaseKey) {
