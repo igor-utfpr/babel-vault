@@ -599,7 +599,161 @@
     }
 
     .animate-fade-up {
-      animation: fadeSlideUp 0.35s ease forwards;
+      animation: fadeSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Transição suave entre telas principais (#start-screen, #game-screen, etc.) */
+    .screen-transition-base {
+      transition: opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, transform;
+    }
+
+    .screen-leaving {
+      opacity: 0 !important;
+      transform: translate3d(0, -10px, 0) scale(0.99) !important;
+      pointer-events: none !important;
+    }
+
+    @keyframes screenEnterSmooth {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 14px, 0) scale(0.99);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    .screen-entering {
+      animation: screenEnterSmooth 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Suavização na troca de enigmas dentro da mesma câmara */
+    @keyframes questionSwapIn {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .question-swap-in {
+      animation: questionSwapIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Suavização de abertura/fechamento dos modais */
+    .modal-smooth {
+      opacity: 0;
+      transition: opacity 0.24s ease;
+    }
+
+    .modal-smooth.modal-visible {
+      opacity: 1;
+    }
+
+    .modal-smooth .modal-panel-box {
+      transform: translate3d(0, 14px, 0) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+    }
+
+    .modal-smooth.modal-visible .modal-panel-box {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    /* Animação temática de Astrolábio e Feixe de Luz na troca de câmara */
+    @keyframes chamberBeamSweep {
+      0% {
+        opacity: 0;
+        transform: scaleX(0.15) scaleY(0.4);
+      }
+      40% {
+        opacity: 0.95;
+        transform: scaleX(1) scaleY(1);
+      }
+      100% {
+        opacity: 0.35;
+        transform: scaleX(1.35) scaleY(1.05);
+      }
+    }
+
+    @keyframes chamberAuraPulse {
+      0% {
+        opacity: 0;
+        transform: scale(0.45);
+      }
+      55% {
+        opacity: 0.9;
+        transform: scale(1.08);
+      }
+      100% {
+        opacity: 0.55;
+        transform: scale(1);
+      }
+    }
+
+    .chamber-light-beam {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: min(76vw, 440px);
+      margin-left: calc(min(76vw, 440px) / -2);
+      background: linear-gradient(
+        180deg,
+        rgba(243, 210, 122, 0.26) 0%,
+        rgba(16, 185, 129, 0.22) 48%,
+        rgba(56, 189, 248, 0.08) 80%,
+        transparent 100%
+      );
+      filter: blur(18px);
+      pointer-events: none;
+    }
+
+    .chamber-radial-aura {
+      position: absolute;
+      width: min(85vw, 520px);
+      height: min(85vw, 520px);
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(16, 185, 129, 0.28) 0%,
+        rgba(243, 210, 122, 0.14) 42%,
+        transparent 72%
+      );
+      pointer-events: none;
+    }
+
+    #phase-transition-modal.modal-visible .chamber-light-beam {
+      animation: chamberBeamSweep 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    #phase-transition-modal.modal-visible .chamber-radial-aura {
+      animation: chamberAuraPulse 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .trans-astrolabe-ring {
+      transform-origin: 60px 60px;
+      transition: transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .screen-transition-base,
+      .screen-entering,
+      .question-swap-in,
+      .modal-smooth,
+      .modal-smooth .modal-panel-box,
+      .chamber-light-beam,
+      .chamber-radial-aura,
+      .trans-astrolabe-ring {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+      }
     }
 
     /* ==========================================================================
@@ -1218,11 +1372,26 @@
     <!-- ========================================================================
          4. OVERLAY DE TRANSIÇÃO ENTRE FASES
          ======================================================================== -->
-    <div id="phase-transition-modal" class="hidden fixed inset-0 z-40 bg-obsidian/92 flex items-center justify-center p-4">
-      <div class="max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-9 text-center border-2 border-emeraldseal/55 animate-fade-up">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emeraldseal/15 border-2 border-emeraldseal flex items-center justify-center text-2xl text-emeraldseal shadow-[0_0_28px_rgba(16,185,129,0.4)]">
-          ✦
+    <!-- ========================================================================
+4. OVERLAY DE TRANSIÇÃO ENTRE FASES (ASTROLÁBIO + FEIXE DE LUZ)
+         ======================================================================== -->
+    <div id="phase-transition-modal" class="hidden modal-smooth fixed inset-0 z-40 bg-obsidian/92 flex items-center justify-center p-4 overflow-hidden">
+      <div class="chamber-light-beam" aria-hidden="true"></div>
+      <div class="chamber-radial-aura" aria-hidden="true"></div>
+
+      <div class="modal-panel-box relative z-10 max-w-lg w-full vault-panel rounded-3xl p-6 sm:p-9 text-center border-2 border-emeraldseal/55">
+        <!-- Mini-Astrolábio Animado de Alinhamento -->
+        <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 relative flex items-center justify-center">
+          <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-[0_0_22px_rgba(16,185,129,0.45)]">
+            <circle cx="60" cy="60" r="55" fill="rgba(11,14,20,0.9)" stroke="rgba(16,185,129,0.45)" stroke-width="1.2" />
+            <circle id="trans-ring-outer" class="trans-astrolabe-ring" cx="60" cy="60" r="46" fill="none" stroke="#10b981" stroke-width="2.2" stroke-dasharray="18 6" />
+            <circle id="trans-ring-mid" class="trans-astrolabe-ring" cx="60" cy="60" r="34" fill="none" stroke="#f3d27a" stroke-width="2" stroke-dasharray="12 5" />
+            <circle id="trans-ring-inner" class="trans-astrolabe-ring" cx="60" cy="60" r="22" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="8 4" />
+            <polygon points="60,47 73,60 60,73 47,60" fill="#0b0e14" stroke="#10b981" stroke-width="1.8" />
+            <circle cx="60" cy="60" r="4" fill="#f3d27a" />
+          </svg>
         </div>
+
         <p id="trans-badge" class="font-mono text-xs uppercase tracking-widest text-emeraldseal mb-2">
           ANEL I ALINHADO EM ESMERALDA
         </p>
@@ -3606,6 +3775,15 @@
         optionsContainer.appendChild(btn);
       });
 
+      const stemEl = document.getElementById("q-stem");
+      const optsEl = document.getElementById("q-options");
+      [stemEl, optsEl].forEach((el) => {
+        if (!el) return;
+        el.classList.remove("question-swap-in");
+        void el.offsetWidth;
+        el.classList.add("question-swap-in");
+      });
+
       updateHUD();
       renderAstrolabe();
     }
@@ -3840,24 +4018,54 @@
       switchScreen("start-screen");
     }
 
+    let screenTransitionTimer = null;
+    let closingPhaseTransition = false;
+
     function switchScreen(screenId) {
-      const screens = ["start-screen", "game-screen", "victory-screen", "defeat-screen"];
-      screens.forEach((id) => {
-        document.getElementById(id).classList.add("hidden");
-      });
-      const target = document.getElementById(screenId);
-      target.classList.remove("hidden");
-      if (screenId === "start-screen") {
-        target.classList.add("stagger-revealed");
+      if (screenTransitionTimer) {
+        clearTimeout(screenTransitionTimer);
+        screenTransitionTimer = null;
       }
 
-      const hud = document.getElementById("game-hud");
-      if (screenId === "game-screen") {
-        hud.classList.remove("hidden");
+      const screens = ["start-screen", "game-screen", "victory-screen", "defeat-screen"];
+      const currentVisible = screens
+        .map((id) => document.getElementById(id))
+        .find((el) => el && !el.classList.contains("hidden") && el.id !== screenId);
+
+      const applySwitch = () => {
+        screens.forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.classList.add("hidden");
+          el.classList.remove("screen-leaving", "screen-entering");
+        });
+
+        const target = document.getElementById(screenId);
+        if (target) {
+          target.classList.add("screen-transition-base");
+          target.classList.remove("hidden");
+          void target.offsetWidth;
+          target.classList.add("screen-entering");
+          if (screenId === "start-screen") {
+            target.classList.add("stagger-revealed");
+          }
+        }
+
+        const hud = document.getElementById("game-hud");
+        if (screenId === "game-screen") {
+          hud.classList.remove("hidden");
+        } else {
+          hud.classList.add("hidden");
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      if (currentVisible) {
+        currentVisible.classList.add("screen-transition-base", "screen-leaving");
+        screenTransitionTimer = setTimeout(applySwitch, 220);
       } else {
-        hud.classList.add("hidden");
+        applySwitch();
       }
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function triggerExpeditionDive(callback) {
@@ -3925,17 +4133,56 @@
     }
 
     function showPhaseTransition(prevCfg, nextCfg) {
+      closingPhaseTransition = false;
+      const modal = document.getElementById("phase-transition-modal");
       document.getElementById("trans-badge").textContent = `ANEL ${prevCfg.romano} ALINHADO EM ESMERALDA`;
       document.getElementById("trans-title").textContent = `Câmara ${nextCfg.romano}: ${nextCfg.titulo}`;
       document.getElementById("trans-desc").textContent =
         `${prevCfg.transicao} Novo desafio: ${nextCfg.conteudo} (Nível ${nextCfg.nivel} — ${nextCfg.acertosNecessarios} acertos necessários).`;
-      document.getElementById("phase-transition-modal").classList.remove("hidden");
+
+      const rOuter = document.getElementById("trans-ring-outer");
+      const rMid = document.getElementById("trans-ring-mid");
+      const rInner = document.getElementById("trans-ring-inner");
+      [rOuter, rMid, rInner].forEach((r) => {
+        if (r) {
+          r.style.transition = "none";
+          r.style.transform = "rotate(0deg)";
+        }
+      });
+
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
+
+      requestAnimationFrame(() => {
+        if (rOuter) {
+          rOuter.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rOuter.style.transform = "rotate(210deg)";
+        }
+        if (rMid) {
+          rMid.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rMid.style.transform = "rotate(-180deg)";
+        }
+        if (rInner) {
+          rInner.style.transition = "transform 1.15s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          rInner.style.transform = "rotate(240deg)";
+        }
+      });
     }
 
     function closePhaseTransition() {
+      if (closingPhaseTransition) return;
+      closingPhaseTransition = true;
       SoundEngine.playClick();
-      document.getElementById("phase-transition-modal").classList.add("hidden");
-      loadQuestion();
+
+      const modal = document.getElementById("phase-transition-modal");
+      modal.classList.remove("modal-visible");
+
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        closingPhaseTransition = false;
+        loadQuestion();
+      }, 240);
     }
 
     function triggerVictory() {
@@ -3986,15 +4233,21 @@
     /* Grimório de Fórmulas */
     function openGrimoireModal() {
       SoundEngine.playClick();
-      document.getElementById("grimorio-modal").classList.remove("hidden");
+      const modal = document.getElementById("grimorio-modal");
+      modal.classList.add("modal-smooth");
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
     }
 
     function closeGrimoireModal() {
       SoundEngine.playClick();
-      document.getElementById("grimorio-modal").classList.add("hidden");
+      const modal = document.getElementById("grimorio-modal");
+      modal.classList.remove("modal-visible");
+      setTimeout(() => modal.classList.add("hidden"), 220);
     }
 
-    /* Visualizador do Banco Completo de 50 Questões */
+    /* Visualizador do Banco Completo de 100 Questões */
     let currentBankFilter = "all";
 
     function openQuestionBankModal() {
@@ -4003,12 +4256,18 @@
       document.getElementById("bank-search-input").value = "";
       updateBankTabStyles();
       renderQuestionBankList();
-      document.getElementById("bank-modal").classList.remove("hidden");
+      const modal = document.getElementById("bank-modal");
+      modal.classList.add("modal-smooth");
+      modal.classList.remove("hidden", "modal-visible");
+      void modal.offsetWidth;
+      modal.classList.add("modal-visible");
     }
 
     function closeQuestionBankModal() {
       SoundEngine.playClick();
-      document.getElementById("bank-modal").classList.add("hidden");
+      const modal = document.getElementById("bank-modal");
+      modal.classList.remove("modal-visible");
+      setTimeout(() => modal.classList.add("hidden"), 220);
     }
 
     function filterQuestionBank(phaseKey) {
