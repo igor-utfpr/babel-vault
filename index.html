@@ -10,9 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Tailwind CSS & Three.js r128 -->
+  <!-- Tailwind CSS, Three.js r128 & Howler.js 2.2.4 -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -2525,27 +2526,199 @@
     /* ==========================================================================
        3. MOTOR SONORO PROCEDURAL (WEB AUDIO API — PROTEGIDO CONTRA AUTOPLAY MOBILE)
        ========================================================================== */
-    const SoundEngine = {
+   const SoundEngine = {
       ctx: null,
+      masterGain: null,
+      reverbNode: null,
       muted: false,
       musicPlaying: false,
+      currentIntensity: 1,
       musicInterval: null,
       tickInterval: null,
-      tickToggle: false,
+      arpInterval: null,
+      tickStep: 0,
+      arpStep: 0,
       droneNodes: null,
+      howlerInitialized: false,
+      howlerBgmByPhase: {},
+      activeHowlerPhase: null,
+      howlerSfx: {},
+      sfxUnavailable: {},
+
+      SFX_PATHS: {
+        click: ["./audio/clique_mecanico.mp3", "./audio/clique_mecanico.ogg"],
+        correct: ["./audio/acerto_harmonia.mp3", "./audio/acerto_harmonia.ogg"],
+        wrong: ["./audio/falha_cristal.mp3", "./audio/falha_cristal.ogg"],
+        phase: ["./audio/transicao_camara.mp3", "./audio/transicao_camara.ogg"],
+        victory: ["./audio/abertura_cofre.mp3", "./audio/abertura_cofre.ogg"],
+        defeat: ["./audio/colapso_cofre.mp3", "./audio/colapso_cofre.ogg"],
+        plunge: ["./audio/mergulho_astrolabio.mp3", "./audio/mergulho_astrolabio.ogg"]
+      },
+      BGM_PHASE_PATHS: {
+        1: ["./audio/trilha_camara_1.mp3", "./audio/trilha_camara_1.ogg"],
+        2: ["./audio/trilha_camara_2.mp3", "./audio/trilha_camara_2.ogg"],
+        3: ["./audio/trilha_camara_3.mp3", "./audio/trilha_camara_3.ogg"],
+        4: ["./audio/trilha_camara_4.mp3", "./audio/trilha_camara_4.ogg"],
+        5: ["./audio/trilha_camara_5.mp3", "./audio/trilha_camara_5.ogg"]
+      },
+
+      CHAMBER_PROFILES: {
+        1: {
+          droneFilter: 190,
+          droneGain: 0.038,
+          subGain: 0.0001,
+          chordInterval: 4400,
+          chordCutoff: 620,
+          chordGain: 0.028,
+          tickInterval: 1000,
+          arpInterval: 0,
+          chords: [
+            [293.66, 440.0, 587.33],
+            [261.63, 392.0, 523.25],
+            [220.0, 329.63, 493.88],
+            [246.94, 369.99, 587.33]
+          ]
+        },
+        2: {
+          droneFilter: 250,
+          droneGain: 0.044,
+          subGain: 0.0001,
+          chordInterval: 3900,
+          chordCutoff: 880,
+          chordGain: 0.034,
+          tickInterval: 500,
+          arpInterval: 0,
+          chords: [
+            [293.66, 349.23, 440.0, 587.33],
+            [233.08, 349.23, 440.0, 523.25],
+            [261.63, 392.0, 493.88, 587.33],
+            [220.0, 329.63, 440.0, 659.25]
+          ]
+        },
+        3: {
+          droneFilter: 330,
+          droneGain: 0.052,
+          subGain: 0.018,
+          chordInterval: 3500,
+          chordCutoff: 1120,
+          chordGain: 0.040,
+          tickInterval: 500,
+          arpInterval: 0,
+          chords: [
+            [146.83, 293.66, 349.23, 440.0],
+            [116.54, 233.08, 349.23, 523.25],
+            [130.81, 261.63, 392.0, 587.33],
+            [110.0, 220.0, 329.63, 493.88]
+          ]
+        },
+        4: {
+          droneFilter: 420,
+          droneGain: 0.058,
+          subGain: 0.028,
+          chordInterval: 3100,
+          chordCutoff: 1380,
+          chordGain: 0.045,
+          tickInterval: 500,
+          arpInterval: 620,
+          arpNotes: [587.33, 698.46, 880.0, 1046.5, 1174.66, 880.0],
+          chords: [
+            [146.83, 293.66, 349.23, 587.33],
+            [116.54, 233.08, 349.23, 523.25],
+            [130.81, 261.63, 392.0, 659.25],
+            [110.0, 220.0, 349.23, 554.37]
+          ]
+        },
+        5: {
+          droneFilter: 540,
+          droneGain: 0.068,
+          subGain: 0.042,
+          chordInterval: 2700,
+          chordCutoff: 1720,
+          chordGain: 0.052,
+          tickInterval: 375,
+          arpInterval: 375,
+          arpNotes: [587.33, 698.46, 880.0, 1174.66, 1318.51, 1174.66, 880.0, 698.46],
+          chords: [
+            [146.83, 220.0, 349.23, 587.33],
+            [116.54, 233.08, 349.23, 587.33],
+            [98.0, 196.0, 293.66, 466.16],
+            [110.0, 220.0, 329.63, 554.37]
+          ]
+        }
+      },
+
+      initHowler() {
+        if (this.howlerInitialized || typeof Howl === "undefined") return;
+        this.howlerInitialized = true;
+
+        Object.entries(this.BGM_PHASE_PATHS).forEach(([phase, srcs]) => {
+          this.howlerBgmByPhase[phase] = new Howl({
+            src: srcs,
+            loop: true,
+            volume: 0,
+            preload: false,
+            onloaderror: () => {
+              this.howlerBgmByPhase[phase] = null;
+            }
+          });
+        });
+
+        Object.entries(this.SFX_PATHS).forEach(([key, srcs]) => {
+          this.howlerSfx[key] = new Howl({
+            src: srcs,
+            volume: 0.65,
+            preload: false,
+            onloaderror: () => {
+              this.sfxUnavailable[key] = true;
+            }
+          });
+        });
+      },
 
       init() {
+        this.initHowler();
         try {
           if (!this.ctx) {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (AudioCtx) {
               this.ctx = new AudioCtx();
+
+              this.masterGain = this.ctx.createGain();
+              this.masterGain.gain.value = this.muted ? 0 : 1;
+              this.masterGain.connect(this.ctx.destination);
+
+              // Câmara de eco procedural (Impulse Response de 2.4s)
+              const len = Math.floor(this.ctx.sampleRate * 2.4);
+              const impulse = this.ctx.createBuffer(2, len, this.ctx.sampleRate);
+              for (let ch = 0; ch < 2; ch++) {
+                const data = impulse.getChannelData(ch);
+                for (let i = 0; i < len; i++) {
+                  data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+                }
+              }
+              this.reverbNode = this.ctx.createConvolver();
+              this.reverbNode.buffer = impulse;
+
+              const wetGain = this.ctx.createGain();
+              wetGain.gain.value = 0.34;
+              this.reverbNode.connect(wetGain);
+              wetGain.connect(this.masterGain);
             }
           }
           if (this.ctx && this.ctx.state === "suspended") {
             this.ctx.resume().catch(() => {});
           }
         } catch (e) {}
+      },
+
+      tryPlayHowlerSfx(key) {
+        const h = this.howlerSfx[key];
+        if (h && !this.sfxUnavailable[key] && h.state() === "loaded") {
+          h.mute(this.muted);
+          h.play();
+          return true;
+        }
+        return false;
       },
 
       updateSoundLabels() {
@@ -2560,6 +2733,17 @@
         this.init();
         this.muted = !this.muted;
         this.updateSoundLabels();
+
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setTargetAtTime(this.muted ? 0 : 1, this.ctx.currentTime, 0.03);
+        }
+        Object.values(this.howlerBgmByPhase).forEach((h) => {
+          if (h) h.mute(this.muted);
+        });
+        Object.values(this.howlerSfx).forEach((h) => {
+          if (h) h.mute(this.muted);
+        });
+
         if (this.muted && this.musicPlaying) {
           this.stopMusic();
         }
@@ -2573,66 +2757,15 @@
           if (this.muted) {
             this.muted = false;
             this.updateSoundLabels();
+            if (this.masterGain && this.ctx) {
+              this.masterGain.gain.setTargetAtTime(1, this.ctx.currentTime, 0.03);
+            }
           }
           this.startMusic();
         }
       },
 
-      startMusic() {
-        if (this.musicPlaying || this.muted) return;
-        this.init();
-        if (!this.ctx) return;
-
-        try {
-          this.musicPlaying = true;
-          const icon = document.getElementById("icon-music");
-          if (icon) icon.textContent = "🎶";
-
-          const now = this.ctx.currentTime;
-          const osc1 = this.ctx.createOscillator();
-          const osc2 = this.ctx.createOscillator();
-          const filter = this.ctx.createBiquadFilter();
-          const gain = this.ctx.createGain();
-
-          osc1.type = "sine";
-          osc1.frequency.setValueAtTime(73.42, now);
-          osc2.type = "triangle";
-          osc2.frequency.setValueAtTime(110.0, now);
-
-          filter.type = "lowpass";
-          filter.frequency.setValueAtTime(250, now);
-
-          gain.gain.setValueAtTime(0.001, now);
-          gain.gain.exponentialRampToValueAtTime(0.04, now + 2.0);
-
-          osc1.connect(filter);
-          osc2.connect(filter);
-          filter.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc1.start();
-          osc2.start();
-          this.droneNodes = { osc1, osc2, gain };
-
-          const notes = [587.33, 659.25, 739.99, 880.0, 1174.66];
-          this.musicInterval = setInterval(() => {
-            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
-            const freq = notes[Math.floor(Math.random() * notes.length)];
-            this.playTone(freq, "sine", 1.8, 0.024);
-          }, 3400);
-
-          this.tickInterval = setInterval(() => {
-            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
-            this.tickToggle = !this.tickToggle;
-            this.playTone(this.tickToggle ? 1520 : 1220, "triangle", 0.022, 0.015);
-          }, 1000);
-        } catch (e) {}
-      },
-
-      stopMusic() {
-        this.musicPlaying = false;
-        const icon = document.getElementById("icon-music");
-        if (icon) icon.textContent = "🎵";
+      clearMusicTimers() {
         if (this.musicInterval) {
           clearInterval(this.musicInterval);
           this.musicInterval = null;
@@ -2641,109 +2774,330 @@
           clearInterval(this.tickInterval);
           this.tickInterval = null;
         }
+        if (this.arpInterval) {
+          clearInterval(this.arpInterval);
+          this.arpInterval = null;
+        }
+      },
+
+      setChamberIntensity(phase) {
+        const level = Math.max(1, Math.min(5, Number(phase) || 1));
+        this.currentIntensity = level;
+
+        if (!this.musicPlaying || this.muted) return;
+
+        // Crossfade caso exista faixa MP3/OGG dedicada para esta câmara
+        const targetTrack = this.howlerBgmByPhase[level];
+        if (targetTrack && targetTrack.state() === "loaded") {
+          if (this.activeHowlerPhase && this.activeHowlerPhase !== level) {
+            const prevTrack = this.howlerBgmByPhase[this.activeHowlerPhase];
+            if (prevTrack && prevTrack.playing()) {
+              prevTrack.fade(prevTrack.volume(), 0, 900);
+              setTimeout(() => prevTrack.pause(), 950);
+            }
+          }
+          if (!targetTrack.playing()) {
+            targetTrack.mute(false);
+            targetTrack.play();
+          }
+          targetTrack.fade(targetTrack.volume(), 0.34 + level * 0.03, 1000);
+          this.activeHowlerPhase = level;
+          return;
+        }
+
+        const profile = this.CHAMBER_PROFILES[level];
+        if (this.droneNodes && this.ctx) {
+          const now = this.ctx.currentTime;
+          this.droneNodes.filter.frequency.setTargetAtTime(profile.droneFilter, now, 0.45);
+          this.droneNodes.gain.gain.setTargetAtTime(profile.droneGain, now, 0.45);
+          this.droneNodes.subGain.gain.setTargetAtTime(profile.subGain, now, 0.45);
+        }
+
+        this.scheduleChamberLayers(level);
+      },
+
+      scheduleChamberLayers(level) {
+        this.clearMusicTimers();
+        const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[1];
+        let chordStep = 0;
+        this.tickStep = 0;
+        this.arpStep = 0;
+
+        const playNextChord = () => {
+          if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+          const chord = profile.chords[chordStep++ % profile.chords.length];
+          this.playFilteredChord(
+            chord,
+            (profile.chordInterval / 1000) * 0.92,
+            profile.chordGain,
+            profile.chordCutoff
+          );
+        };
+
+        playNextChord();
+        this.musicInterval = setInterval(playNextChord, profile.chordInterval);
+
+        // Pulso mecânico evolutivo (pêndulo simples nas fases 1-2; engrenagens pesadas nas fases 3-5)
+        this.tickInterval = setInterval(() => {
+          if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+          const step = this.tickStep++;
+          const isAccent = step % 2 === 0;
+
+          if (level <= 2) {
+            this.playMechanicalLatch(isAccent ? 215 : 175, 0.022 + level * 0.004, 0.04);
+          } else {
+            this.playMechanicalLatch(
+              isAccent ? 120 + level * 8 : 195 + level * 10,
+              isAccent ? 0.055 : 0.032,
+              isAccent ? 0.08 : 0.045
+            );
+            if (isAccent) {
+              this.playFilteredChord([73.42, 146.83], 0.28, 0.032 + level * 0.005, 320);
+            }
+          }
+        }, profile.tickInterval);
+
+        // Camada de arpejo cristalino nas Câmaras IV e V
+        if (profile.arpInterval > 0 && profile.arpNotes) {
+          this.arpInterval = setInterval(() => {
+            if (!this.musicPlaying || this.muted || gameState.isPaused) return;
+            const note = profile.arpNotes[this.arpStep++ % profile.arpNotes.length];
+            this.playFilteredChord([note], 0.55, 0.024, 2100);
+          }, profile.arpInterval);
+        }
+      },
+
+      startMusic() {
+        if (this.musicPlaying || this.muted) return;
+        this.init();
+        this.musicPlaying = true;
+        const icon = document.getElementById("icon-music");
+        if (icon) icon.textContent = "🎶";
+
+        const level = this.currentIntensity || 1;
+        const targetTrack = this.howlerBgmByPhase[level];
+        if (targetTrack && targetTrack.state() === "loaded") {
+          targetTrack.mute(false);
+          targetTrack.play();
+          targetTrack.fade(0, 0.34 + level * 0.03, 1200);
+          this.activeHowlerPhase = level;
+          return;
+        }
+
+        if (!this.ctx) return;
+
+        try {
+          const profile = this.CHAMBER_PROFILES[level] || this.CHAMBER_PROFILES[1];
+          const now = this.ctx.currentTime;
+
+          const osc1 = this.ctx.createOscillator();
+          const osc2 = this.ctx.createOscillator();
+          const subOsc = this.ctx.createOscillator();
+          const filter = this.ctx.createBiquadFilter();
+          const gain = this.ctx.createGain();
+          const subGain = this.ctx.createGain();
+
+          osc1.type = "sine";
+          osc1.frequency.setValueAtTime(73.42, now); // D2
+          osc2.type = "triangle";
+          osc2.frequency.setValueAtTime(110.0, now); // A2
+          subOsc.type = "sine";
+          subOsc.frequency.setValueAtTime(36.71, now); // D1 (sub-grave profundo)
+
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(profile.droneFilter, now);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(profile.droneGain, now + 1.8);
+
+          subGain.gain.setValueAtTime(0.0001, now);
+          subGain.gain.exponentialRampToValueAtTime(profile.subGain, now + 1.8);
+
+          osc1.connect(filter);
+          osc2.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.masterGain);
+          if (this.reverbNode) gain.connect(this.reverbNode);
+
+          subOsc.connect(subGain);
+          subGain.connect(this.masterGain);
+
+          osc1.start();
+          osc2.start();
+          subOsc.start();
+          this.droneNodes = { osc1, osc2, subOsc, filter, gain, subGain };
+
+          this.scheduleChamberLayers(level);
+        } catch (e) {}
+      },
+
+      stopMusic() {
+        this.musicPlaying = false;
+        const icon = document.getElementById("icon-music");
+        if (icon) icon.textContent = "🎵";
+
+        Object.values(this.howlerBgmByPhase).forEach((track) => {
+          if (track && track.playing()) {
+            track.fade(track.volume(), 0, 450);
+            setTimeout(() => {
+              try {
+                track.pause();
+              } catch (e) {}
+            }, 480);
+          }
+        });
+        this.activeHowlerPhase = null;
+
+        this.clearMusicTimers();
+
         if (this.droneNodes && this.ctx) {
           try {
             const now = this.ctx.currentTime;
-            this.droneNodes.gain.gain.setTargetAtTime(0.0001, now, 0.3);
+            this.droneNodes.gain.gain.setTargetAtTime(0.0001, now, 0.35);
+            this.droneNodes.subGain.gain.setTargetAtTime(0.0001, now, 0.35);
+            const oldNodes = this.droneNodes;
+            this.droneNodes = null;
             setTimeout(() => {
               try {
-                this.droneNodes?.osc1?.stop();
-                this.droneNodes?.osc2?.stop();
+                oldNodes.osc1?.stop();
+                oldNodes.osc2?.stop();
+                oldNodes.subOsc?.stop();
               } catch (e) {}
-              this.droneNodes = null;
-            }, 600);
+            }, 650);
           } catch (e) {}
         }
       },
 
-      playTone(freq, type = "sine", duration = 0.25, volume = 0.08, delay = 0) {
+      playFilteredChord(freqs, duration = 1.4, peakGain = 0.085, cutoffMax = 1250) {
         if (this.muted) return;
         try {
           this.init();
           if (!this.ctx || this.ctx.state !== "running") return;
-          const now = this.ctx.currentTime + delay;
-          const osc = this.ctx.createOscillator();
+          const now = this.ctx.currentTime;
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(260, now);
+          filter.frequency.exponentialRampToValueAtTime(cutoffMax, now + duration * 0.4);
+          filter.frequency.exponentialRampToValueAtTime(320, now + duration);
+
+          const env = this.ctx.createGain();
+          env.gain.setValueAtTime(0.0001, now);
+          env.gain.linearRampToValueAtTime(peakGain, now + 0.07);
+          env.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          filter.connect(env);
+          env.connect(this.masterGain);
+          if (this.reverbNode) env.connect(this.reverbNode);
+
+          freqs.forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            osc.type = idx === 0 ? "sine" : "triangle";
+            osc.frequency.setValueAtTime(f, now);
+            osc.detune.setValueAtTime((idx - 1) * 6, now);
+            osc.connect(filter);
+            osc.start(now);
+            osc.stop(now + duration + 0.05);
+          });
+        } catch (e) {}
+      },
+
+      playMechanicalLatch(pitchBase = 170, volume = 0.14, lengthSec = 0.09) {
+        if (this.muted) return;
+        try {
+          this.init();
+          if (!this.ctx || this.ctx.state !== "running") return;
+          const now = this.ctx.currentTime;
+          const bufSize = Math.floor(this.ctx.sampleRate * lengthSec);
+          const noiseBuf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+          const data = noiseBuf.getChannelData(0);
+          for (let i = 0; i < bufSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.32));
+          }
+
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = noiseBuf;
+
+          const bp = this.ctx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.setValueAtTime(pitchBase * 4.2, now);
+          bp.Q.value = 4.0;
+
           const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.0008, now + lengthSec);
 
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, now);
+          noise.connect(bp);
+          bp.connect(gain);
+          gain.connect(this.masterGain);
+          if (this.reverbNode) gain.connect(this.reverbNode);
 
-          gain.gain.setValueAtTime(0.0001, now);
-          gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-
-          osc.start(now);
-          osc.stop(now + duration + 0.02);
+          noise.start(now);
         } catch (e) {}
       },
 
       playClick() {
-        this.playTone(940, "triangle", 0.045, 0.05);
+        if (this.tryPlayHowlerSfx("click")) return;
+        this.playMechanicalLatch(185, 0.13, 0.065);
+        this.playFilteredChord([587.33, 880.0], 0.18, 0.035, 1400);
       },
 
       playCorrect() {
-        this.playTone(293.66, "triangle", 0.65, 0.08, 0.0);
-        this.playTone(369.99, "sine", 0.75, 0.08, 0.07);
-        this.playTone(440.00, "sine", 0.85, 0.09, 0.14);
-        this.playTone(587.33, "triangle", 1.0, 0.09, 0.21);
+        if (this.tryPlayHowlerSfx("correct")) return;
+        this.playMechanicalLatch(210, 0.14, 0.08);
+        this.playFilteredChord([293.66, 369.99, 440.0, 587.33], 1.35, 0.095, 1650);
       },
 
       playPhaseUnlock() {
-        const chord = [293.66, 440.0, 587.33, 739.99, 880.0];
-        chord.forEach((f, idx) => {
-          this.playTone(f, "sine", 1.1, 0.075, idx * 0.09);
-        });
+        if (this.tryPlayHowlerSfx("phase")) return;
+        this.playMechanicalLatch(140, 0.18, 0.14);
+        this.playFilteredChord([146.83, 293.66, 440.0, 587.33, 739.99], 2.1, 0.11, 1900);
       },
 
       playWrong() {
-        this.playTone(130.81, "sawtooth", 0.45, 0.08, 0.0);
-        this.playTone(123.47, "sawtooth", 0.5, 0.08, 0.04);
-        this.playTone(2400, "square", 0.06, 0.03, 0.02);
+        if (this.tryPlayHowlerSfx("wrong")) return;
+        this.playMechanicalLatch(95, 0.24, 0.18);
+        this.playFilteredChord([98.0, 103.83, 146.83], 1.15, 0.11, 520);
       },
 
       playVictory() {
-        const arp = [293.66, 369.99, 440.0, 587.33, 739.99, 880.0, 1174.66];
-        arp.forEach((f, i) => {
-          this.playTone(f, "triangle", 1.15, 0.09, i * 0.11);
-        });
+        if (this.tryPlayHowlerSfx("victory")) return;
+        this.playFilteredChord([146.83, 293.66, 369.99, 440.0, 587.33], 1.6, 0.10, 1800);
+        setTimeout(() => {
+          this.playFilteredChord([220.0, 440.0, 587.33, 739.99, 880.0], 2.4, 0.11, 2200);
+        }, 380);
       },
 
       playDefeat() {
-        const notes = [293.66, 261.63, 220.0, 146.83];
-        notes.forEach((f, i) => {
-          this.playTone(f, "sawtooth", 0.6, 0.06, i * 0.22);
-        });
+        if (this.tryPlayHowlerSfx("defeat")) return;
+        this.playMechanicalLatch(82, 0.22, 0.22);
+        this.playFilteredChord([110.0, 130.81, 164.81], 1.5, 0.09, 460);
+        setTimeout(() => {
+          this.playFilteredChord([73.42, 110.0, 138.59], 2.1, 0.10, 380);
+        }, 480);
       },
 
-      /* Cliques mecânicos seguros durante o Ato I da abertura 3D */
       playSafeIntroGear(step = 0) {
         try {
           if (this.muted || !this.ctx || this.ctx.state !== "running") return;
-          const baseFreq = 340 + step * 75;
-          this.playTone(baseFreq, "triangle", 0.11, 0.045, 0);
-          this.playTone(baseFreq * 1.5, "sine", 0.16, 0.035, 0.03);
+          this.playMechanicalLatch(135 + step * 18, 0.11, 0.09);
+          this.playFilteredChord([146.83 + step * 36.7, 293.66 + step * 55], 0.45, 0.04, 950);
         } catch (e) {}
       },
 
-      /* Acorde harmônico + varredura grave durante o Dolly-Zoom Plunge (Ato III) */
       playSafeIntroPlunge() {
         try {
           if (this.muted) return;
           this.init();
-          if (!this.ctx) return;
-          const triggerChord = () => {
-            const notes = [146.83, 220.0, 293.66, 369.99, 440.0, 587.33, 880.0];
-            notes.forEach((f, idx) => {
-              this.playTone(f, "triangle", 1.4, 0.06, idx * 0.065);
-            });
+          if (this.tryPlayHowlerSfx("plunge")) return;
+          const runPlunge = () => {
+            this.playMechanicalLatch(90, 0.22, 0.22);
+            this.playFilteredChord([73.42, 146.83, 220.0, 293.66, 440.0], 2.2, 0.11, 1750);
           };
-          if (this.ctx.state === "running") {
-            triggerChord();
-          } else if (this.ctx.state === "suspended") {
-            this.ctx.resume().then(triggerChord).catch(() => {});
+          if (this.ctx && this.ctx.state === "running") {
+            runPlunge();
+          } else if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume().then(runPlunge).catch(() => {});
           }
         } catch (e) {}
       }
@@ -3897,13 +4251,14 @@
         return;
       }
 
-      if (gameState.pendingPhaseAdvance) {
+     if (gameState.pendingPhaseAdvance) {
         const prevCfg = FASES_CONFIG[gameState.currentPhase];
         gameState.currentPhase++;
         gameState.phaseCorrect = 0;
         gameState.pendingPhaseAdvance = false;
 
         SoundEngine.playPhaseUnlock();
+        SoundEngine.setChamberIntensity(gameState.currentPhase);
         showPhaseTransition(prevCfg, FASES_CONFIG[gameState.currentPhase]);
         return;
       }
@@ -4016,6 +4371,8 @@
       document.getElementById("pause-modal").classList.add("hidden");
       document.getElementById("phase-transition-modal").classList.add("hidden");
       switchScreen("start-screen");
+
+      SoundEngine.setChamberIntensity(1);
     }
 
     let screenTransitionTimer = null;
@@ -4105,6 +4462,10 @@
     function startGame() {
       SoundEngine.init();
       SoundEngine.playClick();
+      SoundEngine.setChamberIntensity(1);
+      if (!SoundEngine.muted && !SoundEngine.musicPlaying) {
+        SoundEngine.startMusic();
+      }
 
       gameState.status = "playing";
       gameState.isPaused = false;
@@ -4202,6 +4563,8 @@
       document.getElementById("vic-crystals").textContent =
         `${MAX_ERRORS - gameState.errorsCount} / ${MAX_ERRORS}`;
 
+      SoundEngine.setChamberIntensity(1);
+
       switchScreen("victory-screen");
     }
 
@@ -4226,6 +4589,8 @@
 
       document.getElementById("def-seals").textContent = `${gameState.totalCorrect} / 12`;
       document.getElementById("def-chamber").textContent = `Câmara ${cfg.romano}`;
+
+      SoundEngine.setChamberIntensity(1);
 
       switchScreen("defeat-screen");
     }
